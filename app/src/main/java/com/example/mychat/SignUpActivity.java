@@ -10,6 +10,7 @@ import android.util.Patterns;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ProgressBar;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
 import android.widget.TextView;
@@ -20,16 +21,20 @@ import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.auth.UserProfileChangeRequest;
 import com.google.firebase.database.FirebaseDatabase;
+
+import java.util.Objects;
 
 public class SignUpActivity extends AppCompatActivity {
 
     private static final String TAG = "SignUpActivity";
-    private EditText mFullname, mEmail, mPassword, mConfirmpassword;
+    private EditText mFullname, mEmail, mPassword, mPhoneNumber;
     private RadioGroup mRadioGroup;
-    private RadioButton mMale, mFemale;
     private Button mSignUp;
     private TextView mHaveAccount;
+    private ProgressBar mProgressbar;
+
 
     private FirebaseAuth mAuth;
     private FirebaseDatabase mDatabase;
@@ -38,6 +43,7 @@ public class SignUpActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_sign_up);
+        Objects.requireNonNull(getSupportActionBar()).hide();
         init();
         mAuth = FirebaseAuth.getInstance();
         mDatabase = FirebaseDatabase.getInstance();
@@ -62,10 +68,11 @@ public class SignUpActivity extends AppCompatActivity {
         mFullname = findViewById(R.id.sign_up_username);
         mEmail = findViewById(R.id.sign_up_email);
         mPassword = findViewById(R.id.sign_up_password);
-        mConfirmpassword = findViewById(R.id.sign_up_confirm_password);
+        mPhoneNumber = findViewById(R.id.sign_up_phone_number);
         mRadioGroup = findViewById(R.id.sign_up_radio_group);
         mSignUp = findViewById(R.id.sign_up_button);
         mHaveAccount = findViewById(R.id.sign_up_have_account);
+        mProgressbar = findViewById(R.id.sign_up_progressbar);
     }
 
     private void checkInfo()
@@ -73,7 +80,7 @@ public class SignUpActivity extends AppCompatActivity {
         String name = mFullname.getText().toString().trim();
         String email = mEmail.getText().toString().trim();
         String password = mPassword.getText().toString().trim();
-        String cPass = mConfirmpassword.getText().toString().trim();
+        String phone = mPhoneNumber.getText().toString().trim();
         int genderID = mRadioGroup.getCheckedRadioButtonId();
         int gender = 0;
 
@@ -101,10 +108,16 @@ public class SignUpActivity extends AppCompatActivity {
             mEmail.requestFocus();
             return;
         }
-        if (!password.equals(cPass))
+        if (phone.isEmpty())
         {
-            mConfirmpassword.setError("Passwords are not matching");
-            mConfirmpassword.requestFocus();
+            mPhoneNumber.setError("Phone Number is Empty");
+            mPhoneNumber.requestFocus();
+            return;
+        }
+        if (phone.length() != 11)
+        {
+            mPhoneNumber.setError("Incorrect Number");
+            mPhoneNumber.requestFocus();
             return;
         }
         if (password.length() < 6)
@@ -119,11 +132,12 @@ public class SignUpActivity extends AppCompatActivity {
         else
             gender = 2;
 
-        uploadInfo(name, email, password, gender);
+        uploadInfo(name, email, password, phone, gender);
     }
 
-    private void uploadInfo(final String name, final String email, String pass, final int gender)
+    private void uploadInfo(final String name, final String email, String pass, final String phone, final int gender)
     {
+        mProgressbar.setVisibility(View.VISIBLE);
         mAuth.createUserWithEmailAndPassword(email, pass)
                 .addOnCompleteListener(this, new OnCompleteListener<AuthResult>()
                 {
@@ -132,11 +146,18 @@ public class SignUpActivity extends AppCompatActivity {
                     {
                         if (task.isSuccessful())
                         {
-                            User user = new User(name, email, gender);
+                            User user = new User(name, email, phone, gender);
+                            FirebaseUser firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
                             Log.d(TAG, "onComplete: Task : Successful");
+
+                            
+
                             mDatabase.getReference("Users")
                                     .child(mAuth.getUid().toString())
+                                    .child("Profile")
                                     .setValue(user);
+
+
 
                             startActivity(new Intent(SignUpActivity.this, HomeActivity.class));
                             finish();
@@ -145,6 +166,7 @@ public class SignUpActivity extends AppCompatActivity {
                         else
                         {
                             Log.w(TAG, "onComplete: Task : Failure ", task.getException());
+                            mProgressbar.setVisibility(View.GONE);
                         }
                     }
                 })
@@ -154,6 +176,7 @@ public class SignUpActivity extends AppCompatActivity {
                     public void onFailure(@NonNull Exception e)
                     {
                         Log.w(TAG, "onFailure: Failure : ", e);
+                        mProgressbar.setVisibility(View.GONE);
                     }
                 });
     }
