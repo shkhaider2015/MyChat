@@ -43,7 +43,7 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="5dp"
             android:autofillHints="username"
-            android:hint="password"
+            android:hint="passworddd"
             android:inputType="textPassword" />
 
         <EditText

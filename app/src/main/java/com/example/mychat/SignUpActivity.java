@@ -147,17 +147,15 @@ public class SignUpActivity extends AppCompatActivity {
                         if (task.isSuccessful())
                         {
                             User user = new User(name, email, phone, gender);
-                            FirebaseUser firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
+                            FirebaseUser firebaseUser = task.getResult().getUser();
                             Log.d(TAG, "onComplete: Task : Successful");
 
-                            
+
 
                             mDatabase.getReference("Users")
                                     .child(mAuth.getUid().toString())
                                     .child("Profile")
                                     .setValue(user);
-
-
 
                             startActivity(new Intent(SignUpActivity.this, HomeActivity.class));
                             finish();
@@ -179,6 +177,8 @@ public class SignUpActivity extends AppCompatActivity {
                         mProgressbar.setVisibility(View.GONE);
                     }
                 });
+
+
     }
 
 }
