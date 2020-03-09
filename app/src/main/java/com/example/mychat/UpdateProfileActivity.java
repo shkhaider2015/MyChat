@@ -30,7 +30,7 @@ public class UpdateProfileActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_update_profile);
         init();
-        loadInformation();
+        loadInformationFromAuth();
     }
 
     private void init()
@@ -50,30 +50,24 @@ public class UpdateProfileActivity extends AppCompatActivity {
             mDatabaseRef = FirebaseDatabase.getInstance().getReference();
     }
 
-    private void  loadInformation()
+    private void  loadInformationFromAuth()
     {
-        String name = null;
-        String email = null;
-        String phone = null;
 
         FirebaseUser cu = mAuth.getCurrentUser();
 
         try
         {
-            if (cu.getDisplayName() != null)
-                name = cu.getDisplayName();
-            if (cu.getPhoneNumber() != null)
-                phone = cu.getPhoneNumber();
+            if (cu != null)
+            {
+                mFullName.setText(cu.getDisplayName());
+                mEmail.setText(cu.getEmail());
+                mPhoneNumber.setText(cu.getPhoneNumber());
+            }
 
-            email = mAuth.getCurrentUser().getEmail();
         }catch (NullPointerException e)
         {
             Log.e(TAG, "loadInformation: ", e);
         }
-
-
-        Log.d(TAG, "loadInformation: Name : " + name + "\n" + "Email : " + email + "\n" + "Phone : " + phone);
-
 
     }
 }

@@ -35,7 +35,9 @@
             android:layout_marginTop="5dp"
             android:autofillHints="username"
             android:hint="email"
-            android:inputType="textEmailAddress" />
+            android:inputType="textEmailAddress"
+
+            />
 
         <EditText
             android:id="@+id/sign_up_password"
