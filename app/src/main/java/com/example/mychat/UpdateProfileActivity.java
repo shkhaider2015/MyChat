@@ -10,6 +10,7 @@ import android.widget.ImageView;
 import android.widget.RadioGroup;
 
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 
@@ -51,9 +52,25 @@ public class UpdateProfileActivity extends AppCompatActivity {
 
     private void  loadInformation()
     {
-        String name = mAuth.getCurrentUser().getDisplayName();
-        String email = mAuth.getCurrentUser().getEmail();
-        String phone = mAuth.getCurrentUser().getPhoneNumber();
+        String name = null;
+        String email = null;
+        String phone = null;
+
+        FirebaseUser cu = mAuth.getCurrentUser();
+
+        try
+        {
+            if (cu.getDisplayName() != null)
+                name = cu.getDisplayName();
+            if (cu.getPhoneNumber() != null)
+                phone = cu.getPhoneNumber();
+
+            email = mAuth.getCurrentUser().getEmail();
+        }catch (NullPointerException e)
+        {
+            Log.e(TAG, "loadInformation: ", e);
+        }
+
 
         Log.d(TAG, "loadInformation: Name : " + name + "\n" + "Email : " + email + "\n" + "Phone : " + phone);
 

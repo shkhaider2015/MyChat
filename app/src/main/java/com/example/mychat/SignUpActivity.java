@@ -146,18 +146,28 @@ public class SignUpActivity extends AppCompatActivity {
                     {
                         if (task.isSuccessful())
                         {
-                            User user = new User(name, email, phone, gender);
-                            FirebaseUser firebaseUser = task.getResult().getUser();
                             Log.d(TAG, "onComplete: Task : Successful");
 
+                            User user = new User(name, email, phone, gender);
 
-
+                            // Upload Information To Firebase database
                             mDatabase.getReference("Users")
                                     .child(mAuth.getUid().toString())
                                     .child("Profile")
                                     .setValue(user);
 
+                            // Update user info
+                            UserProfileChangeRequest changeRequest = new UserProfileChangeRequest
+                                    .Builder()
+                                    .setDisplayName(name)
+                                    .build();
+
+
+
+                            // start home activity as signup complete
                             startActivity(new Intent(SignUpActivity.this, HomeActivity.class));
+
+                            // finish this activity as we don't need to come here with backspace
                             finish();
 
                         }
@@ -180,5 +190,7 @@ public class SignUpActivity extends AppCompatActivity {
 
 
     }
+
+
 
 }
