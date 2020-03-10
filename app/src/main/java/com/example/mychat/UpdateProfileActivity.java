@@ -1,5 +1,6 @@
 package com.example.mychat;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
@@ -8,6 +9,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.provider.MediaStore;
 import android.util.Log;
@@ -15,6 +17,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.RadioGroup;
+import android.widget.Toast;
 
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -84,6 +87,25 @@ public class UpdateProfileActivity extends AppCompatActivity {
         }catch (NullPointerException e)
         {
             Log.e(TAG, "loadInformation: ", e);
+        }
+
+        class fetchDatabase extends AsyncTask<Void, Void, Void>
+        {
+
+            @Override
+            protected Void doInBackground(Void... voids) {
+
+                return null;
+            }
+        }
+
+        if (NetworkUtility.getConnectionType(this) != 0)
+        {
+            
+        }
+        else
+        {
+            Toast.makeText(this, "No Internet Available", Toast.LENGTH_SHORT).show();
         }
 
     }
@@ -168,6 +190,65 @@ public class UpdateProfileActivity extends AppCompatActivity {
             return;
         }
 
+
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+
+        if (requestCode == GALLERY_REQUEST_CODE)
+        {
+            if (grantResults.length > 0)
+            {
+                if (PermissionsUtility.checkReadWritePermission(this))
+                {
+                    Toast.makeText(this, "Gallery Permission Accepted", Toast.LENGTH_SHORT).show();
+                }
+                else
+                {
+                    Toast.makeText(this, "Gallery Permission Denied", Toast.LENGTH_SHORT).show();
+                    if (PermissionsUtility.useRunTimePermission())
+                    {
+                        // RunTime Permission
+                    }
+
+                }
+            }
+            else
+            {
+                Log.d(TAG, "onRequestPermissionsResult: GRANT RESULT LENGTH IS NOT GREATER THAN ZER0 IN GALLERY");
+                return;
+            }
+        }
+        else if (requestCode == CAMERA_REQUEST_CODE)
+        {
+            if (grantResults.length > 0)
+                {
+                    if (PermissionsUtility.checkCameraPermission(this))
+                    {
+                        Toast.makeText(this, "Camera Permission Accepted", Toast.LENGTH_SHORT).show();
+                    }
+                    else
+                    {
+                        Toast.makeText(this, "Camera Permission Denied", Toast.LENGTH_SHORT).show();
+                        if (PermissionsUtility.useRunTimePermission())
+                        {
+                            // RunTime Permission
+                        }
+                    }
+                }
+                else
+                {
+                    Log.d(TAG, "onRequestPermissionsResult: GRANT RESULT LENGTH IS NOT GREATER THAN ZER0 IN CAMERA");
+                    return;
+                }
+        }
+        else
+        {
+            Log.d(TAG, "onRequestPermissionsResult: REQUEST CODE IS NOT EQUAL TO GALLERY OR CAMERA ");
+            return;
+        }
 
     }
 }
