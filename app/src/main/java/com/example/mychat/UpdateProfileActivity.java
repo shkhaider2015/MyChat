@@ -292,19 +292,45 @@ public class UpdateProfileActivity extends AppCompatActivity {
 
         User user = new User(name, email, phone, gender);
 
-        FirebaseDatabase
-                .getInstance()
-                .getReference("Users")
-                .child(mAuth.getCurrentUser().getUid())
-                .child("Profile")
-                .setValue(user);
+        uploadImageToStorage(ImageUtility.getImageBytes(imageBitmap));
 
-        class ImageToStorage extends AsyncTask<Void, Void, Void>
+
+
+
+    }
+
+    private void uploadImageToStorage(final byte[] bytes)
+    {
+
+    }
+    private void uploadDataToDatabase(final User user)
+    {
+        class UploadData extends AsyncTask<Void, Void, Void>
         {
 
             @Override
             protected Void doInBackground(Void... voids) {
 
+                FirebaseDatabase
+                        .getInstance()
+                        .getReference("Users")
+                        .child(mAuth.getCurrentUser().getUid())
+                        .child("Profile")
+                        .setValue(user);
+
+                return null;
+            }
+        }
+
+        UploadData uploadData = new UploadData();
+        uploadData.execute();
+
+        class UpdateUser extends AsyncTask<Void, Void, Void>
+        {
+
+            @Override
+            protected Void doInBackground(Void... voids) {
+                
                 return null;
             }
         }
