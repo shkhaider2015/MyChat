@@ -4,7 +4,9 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
 
+import android.Manifest;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Bitmap;
@@ -21,6 +23,7 @@ import android.widget.Toast;
 
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.auth.UserProfileChangeRequest;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 
@@ -101,7 +104,7 @@ public class UpdateProfileActivity extends AppCompatActivity {
 
         if (NetworkUtility.getConnectionType(this) != 0)
         {
-            
+
         }
         else
         {
@@ -141,18 +144,40 @@ public class UpdateProfileActivity extends AppCompatActivity {
 
     private void chooseImageFromGallery()
     {
-        Intent galleryIntent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
-        startActivityForResult(galleryIntent, GALLERY_REQUEST_CODE);
+        if (PermissionsUtility.checkReadWritePermission(this))
+        {
+            Log.d(TAG, "chooseImageFromGallery: READ & WRITE PERMISSION ACCEPTED IN CHECKED");
+            Intent galleryIntent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+            startActivityForResult(galleryIntent, GALLERY_REQUEST_CODE);
+        }
+        else
+        {
+            Log.d(TAG, "chooseImageFromGallery: PERMISSION DENIED in R&W... START REQUEST PERMISSION");
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.WRITE_EXTERNAL_STORAGE}, GALLERY_REQUEST_CODE);
+
+        }
     }
 
     private void takeImageFromCamera()
     {
-        Intent cameraIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-        startActivityForResult(cameraIntent, CAMERA_REQUEST_CODE);
+        if (PermissionsUtility.checkCameraPermission(this))
+        {
+            Log.d(TAG, "takeImageFromCamera: CAMERA PERMISSION ACCEPTED IN CHECKED");
+            Intent cameraIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+            startActivityForResult(cameraIntent, CAMERA_REQUEST_CODE);
+        }
+        else
+        {
+            Log.d(TAG, "takeImageFromCamera: PERMISSION DENIED in CAMERA... START REQUEST PERMISSION ");
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.CAMERA}, CAMERA_REQUEST_CODE);
+        }
+
+
     }
 
     @Override
-    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data)
+    {
         super.onActivityResult(requestCode, resultCode, data);
 
         if (resultCode == this.RESULT_CANCELED)
@@ -194,7 +219,8 @@ public class UpdateProfileActivity extends AppCompatActivity {
     }
 
     @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults)
+    {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
 
         if (requestCode == GALLERY_REQUEST_CODE)
@@ -210,6 +236,7 @@ public class UpdateProfileActivity extends AppCompatActivity {
                     Toast.makeText(this, "Gallery Permission Denied", Toast.LENGTH_SHORT).show();
                     if (PermissionsUtility.useRunTimePermission())
                     {
+                        Log.d(TAG, "onRequestPermissionsResult: NEED RUNTIMEPERMISSION FOR R&W");
                         // RunTime Permission
                     }
 
@@ -235,6 +262,7 @@ public class UpdateProfileActivity extends AppCompatActivity {
                         if (PermissionsUtility.useRunTimePermission())
                         {
                             // RunTime Permission
+                            Log.d(TAG, "onRequestPermissionsResult: NEED RUNTIMEPERMISSION FOR CAMERA");
                         }
                     }
                 }
@@ -250,5 +278,35 @@ public class UpdateProfileActivity extends AppCompatActivity {
             return;
         }
 
+    }
+
+    private void uploadDataToFirebase()
+    {
+        String name = mFullName.getText().toString().trim();
+        String email = mEmail.getText().toString().trim();
+        String password = mPassword.getText().toString().trim();
+        String phone = mPhoneNumber.getText().toString().trim();
+        int gender = 1;
+        if (mRadioGroup.getCheckedRadioButtonId() == R.id.update_female)
+            gender = 2;
+
+        User user = new User(name, email, phone, gender);
+
+        FirebaseDatabase
+                .getInstance()
+                .getReference("Users")
+                .child(mAuth.getCurrentUser().getUid())
+                .child("Profile")
+                .setValue(user);
+
+        class ImageToStorage extends AsyncTask<Void, Void, Void>
+        {
+
+            @Override
+            protected Void doInBackground(Void... voids) {
+
+                return null;
+            }
+        }
     }
 }

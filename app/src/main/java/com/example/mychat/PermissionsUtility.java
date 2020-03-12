@@ -30,10 +30,6 @@ public class PermissionsUtility {
         return CAMERA_REQUEST == PackageManager.PERMISSION_GRANTED;
     }
 
-    public static void requestRWPermission()
-    {
-
-    }
 
 
 }
