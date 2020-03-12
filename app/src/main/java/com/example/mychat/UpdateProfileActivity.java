@@ -15,22 +15,28 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.provider.MediaStore;
 import android.util.Log;
+import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.RadioGroup;
 import android.widget.Toast;
 
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.UserProfileChangeRequest;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
+import com.google.firebase.storage.UploadTask;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
 
-public class UpdateProfileActivity extends AppCompatActivity {
+public class UpdateProfileActivity extends AppCompatActivity implements View.OnClickListener {
 
     private static final String TAG = "UpdateProfileActivity";
     private static final int GALLERY_REQUEST_CODE = 101;
@@ -44,8 +50,10 @@ public class UpdateProfileActivity extends AppCompatActivity {
 
     FirebaseAuth mAuth;
     DatabaseReference mDatabaseRef;
+    private StorageReference mStorageReff;
 
     private Bitmap imageBitmap = null;
+    private Uri onlineImageUri = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -54,6 +62,16 @@ public class UpdateProfileActivity extends AppCompatActivity {
         setContentView(R.layout.activity_update_profile);
         init();
         loadInformationFromAuth();
+
+        mImageView.setOnClickListener(this);
+        mUpdateButton.setOnClickListener(this);
+        mRadioGroup.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(RadioGroup group, int checkedId)
+            {
+                mRadioGroup.check(checkedId);
+            }
+        });
     }
 
     private void init()
@@ -62,13 +80,17 @@ public class UpdateProfileActivity extends AppCompatActivity {
         mEmail = findViewById(R.id.update_email);
         mPassword = findViewById(R.id.update_password);
         mPhoneNumber = findViewById(R.id.update_phone);
-        mRadioGroup = findViewById(R.id.sign_up_radio_group);
+        mRadioGroup = findViewById(R.id.update_group);
         mUpdateButton = findViewById(R.id.update_button);
+        mImageView = findViewById(R.id.update_profile_pic);
 
         mAuth = FirebaseAuth.getInstance();
 
         if (mAuth.getUid() != null)
-            mDatabaseRef = FirebaseDatabase.getInstance().getReference(mAuth.getUid());
+        {
+            mDatabaseRef = FirebaseDatabase.getInstance().getReference(mAuth.getCurrentUser().getUid());
+            mStorageReff = FirebaseStorage.getInstance().getReference(mAuth.getCurrentUser().getUid()+ "/Profile/");
+        }
         else
             mDatabaseRef = FirebaseDatabase.getInstance().getReference();
     }
@@ -292,15 +314,54 @@ public class UpdateProfileActivity extends AppCompatActivity {
 
         User user = new User(name, email, phone, gender);
 
-        uploadImageToStorage(ImageUtility.getImageBytes(imageBitmap));
-
-
-
+        uploadImageToStorage(ImageUtility.getImageBytes(imageBitmap), user);
 
     }
 
-    private void uploadImageToStorage(final byte[] bytes)
+    private void uploadImageToStorage(final byte[] bytes, final User user)
     {
+        class UITS extends AsyncTask<Void, Void, Void>
+        {
+
+            @Override
+            protected Void doInBackground(Void... voids) {
+
+                StorageReference mref = FirebaseStorage
+                        .getInstance()
+                        .getReference(mAuth.getCurrentUser().getUid() + "/Profile");
+                mref.putBytes(bytes)
+                        .addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+                            @Override
+                            public void onSuccess(UploadTask.TaskSnapshot taskSnapshot)
+                            {
+                                Log.d(TAG, "onSuccess: Successful upload an image");
+                                onlineImageUri = Uri.parse(taskSnapshot
+                                        .getMetadata()
+                                        .getReference()
+                                        .getDownloadUrl()
+                                        .toString());
+                            }
+                        })
+                        .addOnFailureListener(new OnFailureListener() {
+                            @Override
+                            public void onFailure(@NonNull Exception e)
+                            {
+                                Toast.makeText(UpdateProfileActivity.this, "IMAGE DID NOT UPLOAD", Toast.LENGTH_SHORT).show();
+                            }
+                        });
+
+                return null;
+            }
+
+            @Override
+            protected void onPostExecute(Void aVoid) {
+                super.onPostExecute(aVoid);
+                uploadDataToDatabase(user);
+            }
+        }
+
+        UITS uits = new UITS();
+        uits.execute();
 
     }
     private void uploadDataToDatabase(final User user)
@@ -325,14 +386,20 @@ public class UpdateProfileActivity extends AppCompatActivity {
         UploadData uploadData = new UploadData();
         uploadData.execute();
 
-        class UpdateUser extends AsyncTask<Void, Void, Void>
-        {
+    }
 
-            @Override
-            protected Void doInBackground(Void... voids) {
-                
-                return null;
-            }
+    @Override
+    public void onClick(View v)
+    {
+        switch (v.getId())
+        {
+            case R.id.update_profile_pic:
+                showPictureDialog();
+                break;
+            case R.id.update_button:
+                //handle
+                break;
         }
+
     }
 }
