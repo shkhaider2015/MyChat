@@ -22,7 +22,7 @@ public class PermissionsUtility {
         int RES = ContextCompat.checkSelfPermission(mCTX.getApplicationContext(), Manifest.permission.READ_EXTERNAL_STORAGE);
         int WES = ContextCompat.checkSelfPermission(mCTX.getApplicationContext(), Manifest.permission.WRITE_EXTERNAL_STORAGE);
 
-        return RES == PackageManager.PERMISSION_DENIED && WES == PackageManager.PERMISSION_GRANTED;
+        return RES == PackageManager.PERMISSION_GRANTED && WES == PackageManager.PERMISSION_GRANTED;
     }
 
     public static boolean checkCameraPermission(Context mCTX)
