@@ -13,17 +13,21 @@ import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Handler;
 import android.provider.MediaStore;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.RadioGroup;
 import android.widget.Toast;
 
+import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.UserProfileChangeRequest;
@@ -47,6 +51,7 @@ public class UpdateProfileActivity extends AppCompatActivity implements View.OnC
     private ImageView mImageView;
     private RadioGroup mRadioGroup;
     private Button mUpdateButton;
+    private ProgressBar mProgress;
 
     FirebaseAuth mAuth;
     DatabaseReference mDatabaseRef;
@@ -54,6 +59,7 @@ public class UpdateProfileActivity extends AppCompatActivity implements View.OnC
 
     private Bitmap imageBitmap = null;
     private Uri onlineImageUri = null;
+    private User oldUser = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -83,10 +89,11 @@ public class UpdateProfileActivity extends AppCompatActivity implements View.OnC
         mRadioGroup = findViewById(R.id.update_group);
         mUpdateButton = findViewById(R.id.update_button);
         mImageView = findViewById(R.id.update_profile_pic);
+        mProgress = findViewById(R.id.update_progress);
 
         mAuth = FirebaseAuth.getInstance();
 
-        if (mAuth.getUid() != null)
+        if (mAuth.getCurrentUser().getUid() != null)
         {
             mDatabaseRef = FirebaseDatabase.getInstance().getReference(mAuth.getCurrentUser().getUid());
             mStorageReff = FirebaseStorage.getInstance().getReference(mAuth.getCurrentUser().getUid()+ "/Profile/");
@@ -104,6 +111,7 @@ public class UpdateProfileActivity extends AppCompatActivity implements View.OnC
         {
             if (cu != null)
             {
+                Log.d(TAG, "loadInformationFromAuth: " + cu.getDisplayName() + cu.getEmail() + cu.getPhoneNumber());
                 mFullName.setText(cu.getDisplayName());
                 mEmail.setText(cu.getEmail());
                 mPhoneNumber.setText(cu.getPhoneNumber());
@@ -114,24 +122,7 @@ public class UpdateProfileActivity extends AppCompatActivity implements View.OnC
             Log.e(TAG, "loadInformation: ", e);
         }
 
-        class fetchDatabase extends AsyncTask<Void, Void, Void>
-        {
-
-            @Override
-            protected Void doInBackground(Void... voids) {
-
-                return null;
-            }
-        }
-
-        if (NetworkUtility.getConnectionType(this) != 0)
-        {
-
-        }
-        else
-        {
-            Toast.makeText(this, "No Internet Available", Toast.LENGTH_SHORT).show();
-        }
+        oldUser = new User(mFullName.getText().toString().trim(), mEmail.getText().toString().trim(), mPhoneNumber.getText().toString().trim());
 
     }
 
@@ -215,7 +206,7 @@ public class UpdateProfileActivity extends AppCompatActivity implements View.OnC
                 {
                     Bitmap thumbnail = ImageUtility.getResizedBitmap(ImageUtility.getImage(ImageUtility.getBytes(getContentResolver().openInputStream(contentUri))), 200);
                     imageBitmap = thumbnail;
-                    // imageView.setImageBitmap(thumbnail);
+                    mImageView.setImageBitmap(thumbnail);
 
                 }catch (FileNotFoundException e)
                 {
@@ -230,7 +221,8 @@ public class UpdateProfileActivity extends AppCompatActivity implements View.OnC
         {
             Bitmap thumbnail = (Bitmap) data.getExtras().get("data");
             imageBitmap = ImageUtility.getResizedBitmap(thumbnail ,200);
-            //ImageView.setImageBitmap(thumbnail);
+            mImageView.setImageBitmap(thumbnail);
+
         }
         else
         {
@@ -332,6 +324,8 @@ public class UpdateProfileActivity extends AppCompatActivity implements View.OnC
 
         uploadImageToStorage(ImageUtility.getImageBytes(imageBitmap), user);
 
+
+
     }
 
     private void uploadImageToStorage(final byte[] bytes, final User user)
@@ -397,11 +391,55 @@ public class UpdateProfileActivity extends AppCompatActivity implements View.OnC
 
                 return null;
             }
+
+            @Override
+            protected void onPostExecute(Void aVoid) {
+                super.onPostExecute(aVoid);
+
+
+                Handler handler = new Handler();
+                handler.postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        backgroundTaskFinish(user);
+                    }
+                }, 3000);
+            }
         }
 
         UploadData uploadData = new UploadData();
         uploadData.execute();
 
+    }
+
+    private void backgroundTaskFinish(User user)
+    {
+        Log.d(TAG, "backgroundTaskFinish: ");
+
+        if (user.name != null && onlineImageUri != null)
+        {
+            UserProfileChangeRequest changeRequest = new UserProfileChangeRequest
+                    .Builder()
+                    .setPhotoUri(onlineImageUri)
+                    .setDisplayName(user.name)
+                    .build();
+            FirebaseUser firebaseUser = mAuth.getCurrentUser();
+            firebaseUser.updateProfile(changeRequest)
+                    .addOnCompleteListener(new OnCompleteListener<Void>() {
+                        @Override
+                        public void onComplete(@NonNull Task<Void> task) {
+                            Log.d(TAG, "onComplete: Successfully Update profile");
+                        }
+                    })
+                    .addOnFailureListener(new OnFailureListener() {
+                        @Override
+                        public void onFailure(@NonNull Exception e) {
+                            Log.d(TAG, "onFailure: Failure updating profile");
+                        }
+                    });
+        }
+
+        mProgress.setVisibility(View.GONE);
     }
 
     @Override
@@ -414,6 +452,8 @@ public class UpdateProfileActivity extends AppCompatActivity implements View.OnC
                 break;
             case R.id.update_button:
                 //handle
+                mProgress.setVisibility(View.VISIBLE);
+                uploadDataToFirebase();
                 break;
         }
 
@@ -428,5 +468,18 @@ public class UpdateProfileActivity extends AppCompatActivity implements View.OnC
                 .create()
                 .show();
 
+    }
+
+    private void check()
+    {
+        if (oldUser != null)
+        {
+            if (mFullName.getText().toString().trim() == oldUser.name &&
+            mEmail.getText().toString().trim() == oldUser.email &&
+            mPhoneNumber.getText().toString().trim() == oldUser.phone)
+            {
+
+            }
+        }
     }
 }
