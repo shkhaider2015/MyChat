@@ -22,19 +22,28 @@ public class NetworkUtility {
                 NetworkCapabilities capabilities = cm.getNetworkCapabilities(cm.getActiveNetwork());
                 if (capabilities != null)
                 {
-                    result = 2;
-                    Log.d(TAG, "getConnectionType: WIFI");
+
+                    if (capabilities.hasTransport(NetworkCapabilities.TRANSPORT_WIFI))
+                    {
+                        result = 2;
+                        Log.d(TAG, "getConnectionType: WIFI");
+                    }
+                    else if (capabilities.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR))
+                    {
+                        result = 1;
+                        Log.d(TAG, "getConnectionType: MOBILE DATA");
+                    }
+                    else
+                    {
+                        result = 0;
+                        Log.d(TAG, "getConnectionType: NOT MOBILE AND WIFI ");
+                    }
                     
                 }
-                else if (capabilities.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR))
-                {
-                    result = 1;
-                    Log.d(TAG, "getConnectionType: MOBILE DATA");
-                }
-                else 
+                else
                 {
                     result = 0;
-                    Log.d(TAG, "getConnectionType: NOT MOBILE AND WIFI ");
+                    Log.d(TAG, "getConnectionType: capabilities is null");
                 }
             }
             else

@@ -16,6 +16,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ProgressBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
@@ -101,6 +102,11 @@ public class SiginActivity extends AppCompatActivity  {
         {
             mPassword.setError("Password is not correct");
             mPassword.requestFocus();
+            return;
+        }
+        if (NetworkUtility.getConnectionType(this) == 0)
+        {
+            Toast.makeText(this, "No Internet Connection", Toast.LENGTH_SHORT).show();
             return;
         }
 

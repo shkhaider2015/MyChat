@@ -260,6 +260,14 @@ public class UpdateProfileActivity extends AppCompatActivity implements View.OnC
                     {
                         Log.d(TAG, "onRequestPermissionsResult: NEED RUNTIMEPERMISSION FOR R&W");
                         // RunTime Permission
+                        showMessageOkCancel("You need to allow storage Permission", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                PermissionsUtility.requestCameraPermission(UpdateProfileActivity.this, GALLERY_REQUEST_CODE);
+                            }
+                        });
+
+
                     }
 
                 }
@@ -285,6 +293,14 @@ public class UpdateProfileActivity extends AppCompatActivity implements View.OnC
                         {
                             // RunTime Permission
                             Log.d(TAG, "onRequestPermissionsResult: NEED RUNTIMEPERMISSION FOR CAMERA");
+                            showMessageOkCancel("You Need to allow camera Permission", new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int which)
+                                {
+                                    PermissionsUtility
+                                            .requestCameraPermission(UpdateProfileActivity.this, CAMERA_REQUEST_CODE);
+                                }
+                            });
                         }
                     }
                 }
@@ -400,6 +416,17 @@ public class UpdateProfileActivity extends AppCompatActivity implements View.OnC
                 //handle
                 break;
         }
+
+    }
+
+    private void showMessageOkCancel(String message, DialogInterface.OnClickListener OkListner)
+    {
+        new AlertDialog.Builder(UpdateProfileActivity.this)
+                .setMessage(message)
+                .setPositiveButton("OK", OkListner)
+                .setNegativeButton("Cancel", null)
+                .create()
+                .show();
 
     }
 }
