@@ -46,16 +46,17 @@
                 android:hint="Full Name"/>
 
             <EditText
-                android:id="@+id/update_email"
+                android:id="@+id/update_about"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:hint="Email"
-                android:inputType="textEmailAddress"/>
-            <EditText
-                android:id="@+id/update_password"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:hint="Password" />
+                android:hint="About Your self"
+                android:inputType="textMultiLine"
+                android:lines="3"
+                android:minLines="3"
+                android:maxLines="7"
+                android:gravity="top|left"
+                android:scrollbars="vertical"/>
+
 
             <EditText
                 android:id="@+id/update_phone"

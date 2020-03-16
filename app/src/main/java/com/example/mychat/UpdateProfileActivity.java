@@ -47,7 +47,7 @@ public class UpdateProfileActivity extends AppCompatActivity implements View.OnC
     private static final int CAMERA_REQUEST_CODE = 102;
 
 
-    private EditText mFullName, mEmail, mPassword, mPhoneNumber;
+    private EditText mFullName, mAbout, mPhoneNumber;
     private ImageView mImageView;
     private RadioGroup mRadioGroup;
     private Button mUpdateButton;
@@ -83,8 +83,7 @@ public class UpdateProfileActivity extends AppCompatActivity implements View.OnC
     private void init()
     {
         mFullName = findViewById(R.id.update_fullname);
-        mEmail = findViewById(R.id.update_email);
-        mPassword = findViewById(R.id.update_password);
+        mAbout = findViewById(R.id.update_about);
         mPhoneNumber = findViewById(R.id.update_phone);
         mRadioGroup = findViewById(R.id.update_group);
         mUpdateButton = findViewById(R.id.update_button);
@@ -113,7 +112,6 @@ public class UpdateProfileActivity extends AppCompatActivity implements View.OnC
             {
                 Log.d(TAG, "loadInformationFromAuth: " + cu.getDisplayName() + cu.getEmail() + cu.getPhoneNumber());
                 mFullName.setText(cu.getDisplayName());
-                mEmail.setText(cu.getEmail());
                 mPhoneNumber.setText(cu.getPhoneNumber());
             }
 
@@ -122,7 +120,7 @@ public class UpdateProfileActivity extends AppCompatActivity implements View.OnC
             Log.e(TAG, "loadInformation: ", e);
         }
 
-        oldUser = new User(mFullName.getText().toString().trim(), mEmail.getText().toString().trim(), mPhoneNumber.getText().toString().trim());
+        oldUser = new User(mFullName.getText().toString().trim(),mAbout.getText().toString(), mAuth.getCurrentUser().getEmail(), mPhoneNumber.getText().toString().trim(), getGender());
 
     }
 
@@ -313,17 +311,15 @@ public class UpdateProfileActivity extends AppCompatActivity implements View.OnC
     private void uploadDataToFirebase()
     {
         String name = mFullName.getText().toString().trim();
-        String email = mEmail.getText().toString().trim();
-        String password = mPassword.getText().toString().trim();
+        String about = mAbout.getText().toString().trim();
         String phone = mPhoneNumber.getText().toString().trim();
         int gender = 1;
         if (mRadioGroup.getCheckedRadioButtonId() == R.id.update_female)
             gender = 2;
 
-        User user = new User(name, email, phone, gender);
+        User user = new User(name,about, mAuth.getCurrentUser().getEmail(), phone, gender);
 
         uploadImageToStorage(ImageUtility.getImageBytes(imageBitmap), user);
-
 
 
     }
@@ -470,16 +466,18 @@ public class UpdateProfileActivity extends AppCompatActivity implements View.OnC
 
     }
 
-    private void check()
+    private int getGender()
     {
-        if (oldUser != null)
-        {
-            if (mFullName.getText().toString().trim() == oldUser.name &&
-            mEmail.getText().toString().trim() == oldUser.email &&
-            mPhoneNumber.getText().toString().trim() == oldUser.phone)
-            {
+        int selected = mRadioGroup.getCheckedRadioButtonId();
+        if (selected == R.id.update_female)
+            return 2;
+        return 1;
+    }
 
-            }
-        }
+    private int check()
+    {
+
+
+        return 3;
     }
 }

@@ -2,7 +2,7 @@ package com.example.mychat;
 
 public class User {
 
-    public String name, email, phone;
+    public String name, about, email, phone;
     public int gender;
 
     public User()
@@ -10,10 +10,13 @@ public class User {
 
     }
 
-    public User(String name, String email, String phone)
+
+    public User(String name, String about,String email, String phone, int gender)
     {
         this.name = name;
+        this.about = about;
         this.email = email;
+        this.gender = gender;
         this.phone = phone;
     }
 
