@@ -4,8 +4,14 @@ import android.content.Context;
 import android.net.ConnectivityManager;
 import android.net.NetworkCapabilities;
 import android.net.NetworkInfo;
+import android.os.AsyncTask;
 import android.os.Build;
+import android.os.StrictMode;
 import android.util.Log;
+
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+import java.util.concurrent.ExecutionException;
 
 public class NetworkUtility {
     private static final String TAG = "NetworkUtility";
@@ -94,4 +100,45 @@ public class NetworkUtility {
 
         return result;
     }
+
+    public static boolean isInternetAvailable() {
+        vv vv = new vv();
+        boolean result = false;
+        try {
+            result = vv.execute().get();
+
+        }catch (ExecutionException e)
+        {
+            Log.e(TAG, "isInternetAvailable: ", e);
+        }catch (InterruptedException e)
+        {
+            Log.e(TAG, "isInternetAvailable: ", e);
+        }
+
+        return result;
+    }
+
+    public static void strictModeOn()
+    {
+            StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
+            StrictMode.setThreadPolicy(policy);
+    }
+
+    static class vv extends AsyncTask<Boolean, Boolean, Boolean>
+    {
+
+        @Override
+        protected Boolean doInBackground(Boolean... booleans) {
+            try {
+                InetAddress address = InetAddress.getByName("www.google.com");
+                return !address.equals("");
+            } catch (UnknownHostException e) {
+                // Log error
+                Log.e(TAG, "isInternetAvailable: ", e);
+            }
+            return false;
+        }
+    }
+
+
 }

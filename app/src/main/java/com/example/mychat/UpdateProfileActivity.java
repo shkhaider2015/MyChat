@@ -319,6 +319,18 @@ public class UpdateProfileActivity extends AppCompatActivity implements View.OnC
 
         User user = new User(name,about, mAuth.getCurrentUser().getEmail(), phone, gender);
 
+        if (NetworkUtility.getConnectionType(this) == 0)
+        {
+            Toast.makeText(this, "No Internet Connection", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        if (!NetworkUtility.isInternetAvailable())
+        {
+            Log.d(TAG, "uploadDataToFirebase: Network is connected");
+            Log.d(TAG, "uploadDataToFirebase: Internet is not available");
+            return;
+        }
+
         uploadImageToStorage(ImageUtility.getImageBytes(imageBitmap), user);
 
 
@@ -474,10 +486,5 @@ public class UpdateProfileActivity extends AppCompatActivity implements View.OnC
         return 1;
     }
 
-    private int check()
-    {
-//sss//ssssssadsadsadsadasdsadas
 
-        return 3;
-    }
 }

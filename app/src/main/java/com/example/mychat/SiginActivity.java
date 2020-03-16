@@ -76,6 +76,7 @@ public class SiginActivity extends AppCompatActivity  {
 
     private void signin()
     {
+        mProgressbar.setVisibility(View.VISIBLE);
         String email = mEmail.getText().toString().trim();
         String pass = mPassword.getText().toString().trim();
 
@@ -109,8 +110,14 @@ public class SiginActivity extends AppCompatActivity  {
             Toast.makeText(this, "No Internet Connection", Toast.LENGTH_SHORT).show();
             return;
         }
+        NetworkUtility.strictModeOn();
+        if (NetworkUtility.isInternetAvailable())
+        {
+            Toast.makeText(this, "Network is available but without internet", Toast.LENGTH_SHORT).show();
+            return;
+        }
 
-        mProgressbar.setVisibility(View.VISIBLE);
+
         mAuth.signInWithEmailAndPassword(email, pass)
                 .addOnCompleteListener(this, new OnCompleteListener<AuthResult>()
                 {
