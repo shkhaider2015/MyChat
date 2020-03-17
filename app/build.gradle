@@ -33,6 +33,8 @@ dependencies {
     // Card View
     implementation 'androidx.cardview:cardview:1.0.0'
 
+    // Circuler Image View
+    implementation 'de.hdodenhof:circleimageview:3.1.0'
 
 
     testImplementation 'junit:junit:4.13'

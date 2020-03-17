@@ -24,6 +24,7 @@ import android.widget.ProgressBar;
 import android.widget.RadioGroup;
 import android.widget.Toast;
 
+import com.google.android.gms.tasks.OnCanceledListener;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
@@ -33,12 +34,14 @@ import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.UserProfileChangeRequest;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.storage.FileDownloadTask;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.Objects;
 
 public class UpdateProfileActivity extends AppCompatActivity implements View.OnClickListener {
 
@@ -66,18 +69,18 @@ public class UpdateProfileActivity extends AppCompatActivity implements View.OnC
     {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_update_profile);
-        init();
-        loadInformationFromAuth();
-
-        mImageView.setOnClickListener(this);
-        mUpdateButton.setOnClickListener(this);
-        mRadioGroup.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(RadioGroup group, int checkedId)
-            {
-                mRadioGroup.check(checkedId);
-            }
-        });
+//        init();
+//        loadInformationFromAuth();
+//
+//        mImageView.setOnClickListener(this);
+//        mUpdateButton.setOnClickListener(this);
+//        mRadioGroup.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
+//            @Override
+//            public void onCheckedChanged(RadioGroup group, int checkedId)
+//            {
+//                mRadioGroup.check(checkedId);
+//            }
+//        });
     }
 
     private void init()
@@ -355,11 +358,10 @@ public class UpdateProfileActivity extends AppCompatActivity implements View.OnC
                             {
                                 Log.d(TAG, "onSuccess: Successful upload an image");
                                 try {
-                                    onlineImageUri = taskSnapshot
-                                            .getMetadata()
-                                            .getReference()
-                                            .getDownloadUrl()
-                                            .getResult();
+                                    Task s = taskSnapshot.getMetadata().getReference()
+                                            .getDownloadUrl();
+                                    if (s.isSuccessful())
+                                        onlineImageUri = Uri.parse(s.toString());
 
                                 }catch (NullPointerException e)
                                 {
@@ -446,6 +448,7 @@ public class UpdateProfileActivity extends AppCompatActivity implements View.OnC
     {
         Log.d(TAG, "backgroundTaskFinish: ");
 
+
         if (user.name != null && onlineImageUri != null)
         {
             UserProfileChangeRequest changeRequest = new UserProfileChangeRequest
@@ -467,7 +470,30 @@ public class UpdateProfileActivity extends AppCompatActivity implements View.OnC
                             Log.d(TAG, "onFailure: Failure updating profile");
                         }
                     });
+
+            FirebaseDatabase
+                    .getInstance()
+                    .getReference("Users")
+                    .child(mAuth.getCurrentUser().getUid())
+                    .child("Profile")
+                    .child("profilepictureuri")
+                    .setValue(onlineImageUri)
+                    .addOnCompleteListener(new OnCompleteListener<Void>() {
+                        @Override
+                        public void onComplete(@NonNull Task<Void> task)
+                        {
+                            Log.d(TAG, "onComplete: Profile Picture Uri send to database");
+                        }
+                    })
+                    .addOnFailureListener(new OnFailureListener() {
+                        @Override
+                        public void onFailure(@NonNull Exception e) {
+                            Log.e(TAG, "onFailure: Profile picture Uri not send : Reasen --> ", e);
+                        }
+                    });
         }
+
+
 
         mProgress.setVisibility(View.GONE);
     }

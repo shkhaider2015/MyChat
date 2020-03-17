@@ -55,7 +55,7 @@ public class HomeActivity extends AppCompatActivity {
                 finish();
                 break;
             case R.id.menu_update_profile:
-                startActivity(new Intent(HomeActivity.this, UpdateProfileActivity.class));
+                startActivity(new Intent(HomeActivity.this, UpdateActivity.class));
                 tmp = true;
                 break;
         }
