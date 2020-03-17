@@ -110,9 +110,10 @@ public class UpdateProfileActivity extends AppCompatActivity implements View.OnC
         {
             if (cu != null)
             {
-                Log.d(TAG, "loadInformationFromAuth: " + cu.getDisplayName() + cu.getEmail() + cu.getPhoneNumber());
+                Log.d(TAG, "loadInformationFromAuth: " + cu.getDisplayName() + cu.getEmail() + cu.getPhotoUrl());
                 mFullName.setText(cu.getDisplayName());
                 mPhoneNumber.setText(cu.getPhoneNumber());
+                mImageView.setImageURI(cu.getPhotoUrl());
             }
 
         }catch (NullPointerException e)
@@ -353,11 +354,18 @@ public class UpdateProfileActivity extends AppCompatActivity implements View.OnC
                             public void onSuccess(UploadTask.TaskSnapshot taskSnapshot)
                             {
                                 Log.d(TAG, "onSuccess: Successful upload an image");
-                                onlineImageUri = Uri.parse(taskSnapshot
-                                        .getMetadata()
-                                        .getReference()
-                                        .getDownloadUrl()
-                                        .toString());
+                                try {
+                                    onlineImageUri = taskSnapshot
+                                            .getMetadata()
+                                            .getReference()
+                                            .getDownloadUrl()
+                                            .getResult();
+
+                                }catch (NullPointerException e)
+                                {
+                                    Log.e(TAG, "onSuccess: ", e);
+                                }
+                                Log.d(TAG, "onSuccess: TaskSnapshot : " + taskSnapshot);
                             }
                         })
                         .addOnFailureListener(new OnFailureListener() {
@@ -395,7 +403,21 @@ public class UpdateProfileActivity extends AppCompatActivity implements View.OnC
                         .getReference("Users")
                         .child(mAuth.getCurrentUser().getUid())
                         .child("Profile")
-                        .setValue(user);
+                        .setValue(user)
+                        .addOnCompleteListener(new OnCompleteListener<Void>() {
+                            @Override
+                            public void onComplete(@NonNull Task<Void> task)
+                            {
+                                if (task.isSuccessful())
+                                    Log.d(TAG, "onComplete: Successfully upload data");
+                            }
+                        })
+                        .addOnFailureListener(new OnFailureListener() {
+                            @Override
+                            public void onFailure(@NonNull Exception e) {
+                                Log.e(TAG, "onFailure: data not uploaded : ", e);
+                            }
+                        });
 
                 return null;
             }
@@ -411,7 +433,7 @@ public class UpdateProfileActivity extends AppCompatActivity implements View.OnC
                     public void run() {
                         backgroundTaskFinish(user);
                     }
-                }, 3000);
+                }, 5000);
             }
         }
 

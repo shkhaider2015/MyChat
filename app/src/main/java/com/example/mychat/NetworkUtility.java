@@ -106,6 +106,7 @@ public class NetworkUtility {
         boolean result = false;
         try {
             result = vv.execute().get();
+            Log.d(TAG, "isInternetAvailable: result = " + result);
 
         }catch (ExecutionException e)
         {
@@ -131,6 +132,7 @@ public class NetworkUtility {
         protected Boolean doInBackground(Boolean... booleans) {
             try {
                 InetAddress address = InetAddress.getByName("www.google.com");
+                Log.d(TAG, "doInBackground: address : " + address);
                 return !address.equals("");
             } catch (UnknownHostException e) {
                 // Log error

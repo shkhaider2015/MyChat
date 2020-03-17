@@ -72,6 +72,8 @@ public class SiginActivity extends AppCompatActivity  {
         mProgressbar = findViewById(R.id.signin_progressbar);
 
         mAuth = FirebaseAuth.getInstance();
+
+        NetworkUtility.strictModeOn();
     }
 
     private void signin()
@@ -84,6 +86,7 @@ public class SiginActivity extends AppCompatActivity  {
         {
             mEmail.setError("Email required");
             mEmail.requestFocus();
+            mProgressbar.setVisibility(View.GONE);
             return;
         }
 
@@ -91,29 +94,34 @@ public class SiginActivity extends AppCompatActivity  {
         {
             mEmail.setError("Email is not correct");
             mEmail.requestFocus();
+            mProgressbar.setVisibility(View.GONE);
             return;
         }
         if (pass.isEmpty())
         {
             mPassword.setError("Password is required");
             mPassword.requestFocus();
+            mProgressbar.setVisibility(View.GONE);
             return;
         }
         if (pass.length() < 6)
         {
             mPassword.setError("Password is not correct");
             mPassword.requestFocus();
+            mProgressbar.setVisibility(View.GONE);
             return;
         }
         if (NetworkUtility.getConnectionType(this) == 0)
         {
             Toast.makeText(this, "No Internet Connection", Toast.LENGTH_SHORT).show();
+            mProgressbar.setVisibility(View.GONE);
             return;
         }
-        NetworkUtility.strictModeOn();
-        if (NetworkUtility.isInternetAvailable())
+
+        if (!NetworkUtility.isInternetAvailable())
         {
             Toast.makeText(this, "Network is available but without internet", Toast.LENGTH_SHORT).show();
+            mProgressbar.setVisibility(View.GONE);
             return;
         }
 
