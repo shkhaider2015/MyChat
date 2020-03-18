@@ -17,15 +17,26 @@ import android.provider.MediaStore;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.RadioGroup;
 import android.widget.Toast;
 
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
+import com.google.firebase.storage.UploadTask;
+
 import java.io.ByteArrayOutputStream;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.Objects;
 
 public class UpdateActivity extends AppCompatActivity implements View.OnClickListener {
@@ -41,6 +52,8 @@ public class UpdateActivity extends AppCompatActivity implements View.OnClickLis
     private ProgressBar mProgress;
 
     private Uri localImageUri = null;
+
+    StorageReference stRef = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -64,6 +77,8 @@ public class UpdateActivity extends AppCompatActivity implements View.OnClickLis
         mUpdateButton = findViewById(R.id.update_button);
         mImageView = findViewById(R.id.update_profile_pic);
         mProgress = findViewById(R.id.update_progress);
+
+        stRef = FirebaseStorage.getInstance().getReference();
     }
 
 
@@ -225,41 +240,27 @@ public class UpdateActivity extends AppCompatActivity implements View.OnClickLis
             {
                 Uri contentUri = data.getData();
                 mImageView.setImageURI(contentUri);
-                mImageView.setTag(contentUri);
+                mImageView.setTag(ImageUtility.getPath(this, contentUri));
                 Log.d(TAG, "onActivityResult: data.getData() : " + contentUri);
-//                try
-//                {
-//                    Bitmap thumbnail = ImageUtility.getResizedBitmap(ImageUtility.getImage(ImageUtility.getBytes(getContentResolver().openInputStream(contentUri))), 200);
-////                    imageBitmap = thumbnail;
-//                    mImageView.setImageBitmap(thumbnail);
-//
-//                }catch (FileNotFoundException e)
-//                {
-//                    Log.e(TAG, "onActivityResult: ", e);
-//                }catch (IOException e)
-//                {
-//                    Log.e(TAG, "onActivityResult: ", e);
-//                }
             }
         }
         else if (requestCode == CAMERA_REQUEST_CODE)
         {
-//            Bitmap thumbnail = (Bitmap) data.getExtras().get("data");
-//            imageBitmap = ImageUtility.getResizedBitmap(thumbnail ,200);
+
             if (data != null)
             {
                 if (data.getData() != null)
                 {
                     Uri contentUri = data.getData();
                     mImageView.setImageURI(contentUri);
-                    mImageView.setTag(ImageUtility.getRealPathFromURI(contentUri, UpdateActivity.this));
+                    mImageView.setTag(ImageUtility.getPath(this, contentUri));
                     Log.d(TAG, "onActivityResult: data.getData() : " + contentUri);
                 }
                 else
                 {
                     Bitmap imgBitmap = (Bitmap) Objects.requireNonNull(data.getExtras()).get("data");
                     mImageView.setImageBitmap(imgBitmap);
-                    mImageView.setTag(ImageUtility.getRealPathFromURI(ImageUtility.getImageUri(this, imgBitmap), UpdateActivity.this));
+                    mImageView.setTag(ImageUtility.getPath(this, ImageUtility.getImageUri(this, imgBitmap) ));
                     Log.d(TAG, "onActivityResult: data.getData().getExtra() : " + imgBitmap);
                 }
             }
@@ -305,7 +306,54 @@ public class UpdateActivity extends AppCompatActivity implements View.OnClickLis
     private void check()
     {
         Log.d(TAG, "check: URI : " + mImageView.getTag());
+        try {
+            imageUpload();
+        }catch (FileNotFoundException fe)
+        {
+            Log.e(TAG, "check: ", fe);
+        }
     }
 
+    private void imageUpload() throws FileNotFoundException
+    {
+        InputStream inputStream = new FileInputStream(mImageView.getTag().toString());
+        final StorageReference imageRef = stRef.child("images/riversssss");
+
+        imageRef.putStream(inputStream)
+                .addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+                    @Override
+                    public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                        Toast.makeText(UpdateActivity.this, "Upload Success : ", Toast.LENGTH_SHORT).show();
+                        Log.d(TAG, "onSuccess: -------------------->");
+                        imageRef.getDownloadUrl()
+                                .addOnSuccessListener(new OnSuccessListener<Uri>() {
+                                    @Override
+                                    public void onSuccess(Uri uri) {
+                                        mImageView.setImageURI(uri);
+                                    }
+                                });
+
+                }
+                })
+                .addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        Toast.makeText(UpdateActivity.this, "NOT !!!! Upload Success : ", Toast.LENGTH_SHORT).show();
+                    }
+                }).addOnCompleteListener(new OnCompleteListener<UploadTask.TaskSnapshot>() {
+            @Override
+            public void onComplete(@NonNull Task<UploadTask.TaskSnapshot> task) {
+                if (task.isSuccessful())
+                {
+                    Log.d(TAG, "onComplete: ----------------------->");
+
+
+
+                }
+
+
+            }
+        });
+    }
 
 }
