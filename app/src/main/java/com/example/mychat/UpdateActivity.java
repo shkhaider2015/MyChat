@@ -252,14 +252,14 @@ public class UpdateActivity extends AppCompatActivity implements View.OnClickLis
                 {
                     Uri contentUri = data.getData();
                     mImageView.setImageURI(contentUri);
-                    mImageView.setTag(contentUri);
+                    mImageView.setTag(ImageUtility.getRealPathFromURI(contentUri, UpdateActivity.this));
                     Log.d(TAG, "onActivityResult: data.getData() : " + contentUri);
                 }
                 else
                 {
                     Bitmap imgBitmap = (Bitmap) Objects.requireNonNull(data.getExtras()).get("data");
                     mImageView.setImageBitmap(imgBitmap);
-                    mImageView.setTag(ImageUtility.getImageUri(this, imgBitmap));
+                    mImageView.setTag(ImageUtility.getRealPathFromURI(ImageUtility.getImageUri(this, imgBitmap), UpdateActivity.this));
                     Log.d(TAG, "onActivityResult: data.getData().getExtra() : " + imgBitmap);
                 }
             }
@@ -297,10 +297,15 @@ public class UpdateActivity extends AppCompatActivity implements View.OnClickLis
                 //handle
                 mProgress.setVisibility(View.VISIBLE);
 //                uploadDataToFirebase();
+                check();
                 break;
         }
     }
-    
+
+    private void check()
+    {
+        Log.d(TAG, "check: URI : " + mImageView.getTag());
+    }
 
 
 }
