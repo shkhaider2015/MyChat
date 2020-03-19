@@ -12,4 +12,33 @@ public class UserModel {
         this.gender = gender;
         this.imageUri = imageUri;
     }
+
+    public UserModel()
+    {
+
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public String getAbout() {
+        return about;
+    }
+
+    public String getPhone() {
+        return phone;
+    }
+
+    public String getGender() {
+        return gender;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public String getImageUri() {
+        return imageUri;
+    }
 }

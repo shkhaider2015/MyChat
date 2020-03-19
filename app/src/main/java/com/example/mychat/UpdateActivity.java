@@ -30,6 +30,7 @@ import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -101,8 +102,7 @@ public class UpdateActivity extends AppCompatActivity implements View.OnClickLis
 
         mProfileRef = FirebaseDatabase
                 .getInstance()
-                .getReference("Users")
-                .child(mAuth.getCurrentUser().getUid())
+                .getReference(mAuth.getCurrentUser().getUid())
                 .child("Profile");
     }
 
@@ -417,12 +417,40 @@ public class UpdateActivity extends AppCompatActivity implements View.OnClickLis
     @Override
     public void onDataChange(@NonNull DataSnapshot dataSnapshot)
     {
-        Log.d(TAG, "onDataChange: dataSnapshot : " + dataSnapshot);
+        Log.d(TAG, "onDataChange: dataSnapshot : " + dataSnapshot.getValue());
+        updateUI(dataSnapshot);
     }
 
     @Override
     public void onCancelled(@NonNull DatabaseError databaseError)
     {
-        Log.d(TAG, "onCancelled: databaseError : " + databaseError);
+        Log.d(TAG, "onCancelled: Failed to read database : " + databaseError);
+    }
+
+    private void updateUI(DataSnapshot dataSnapshot)
+    {
+        FirebaseUser user = mAuth.getCurrentUser();
+
+        if (NetworkUtility.getConnectionType(this) != 0 && NetworkUtility.isInternetAvailable())
+        {
+            if (dataSnapshot != null)
+            {
+                UserModel userModel = dataSnapshot.getValue(UserModel.class);
+
+//                mImageView.setImageURI(Uri.parse(dataSnapshot.child("Profile").child("imageUri").getValue().toString()));
+//                mFullName.setText(dataSnapshot.child("Profile").child("name").getValue().toString());
+
+                Log.d(TAG, "updateUI: TESTING ---------> " + userModel.phone);
+            }
+        }
+        else
+        {
+            if (user.getPhotoUrl() != null)
+                mImageView.setImageURI(user.getPhotoUrl());
+            if (user.getDisplayName() != null)
+                mFullName.setText(user.getDisplayName());
+
+        }
+
     }
 }
