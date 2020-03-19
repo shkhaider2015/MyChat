@@ -24,10 +24,17 @@ import android.widget.ProgressBar;
 import android.widget.RadioGroup;
 import android.widget.Toast;
 
+import com.example.mychat.Models.UserModel;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
@@ -37,9 +44,10 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Calendar;
 import java.util.Objects;
 
-public class UpdateActivity extends AppCompatActivity implements View.OnClickListener {
+public class UpdateActivity extends AppCompatActivity implements View.OnClickListener, ValueEventListener {
 
     private static final String TAG = "UpdateActivity";
     private static final int GALLERY_REQUEST_CODE = 101;
@@ -54,9 +62,12 @@ public class UpdateActivity extends AppCompatActivity implements View.OnClickLis
     private Uri localImageUri = null;
 
     StorageReference stRef = null;
+    DatabaseReference mProfileRef = null;
+    FirebaseAuth mAuth = null;
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    protected void onCreate(Bundle savedInstanceState)
+    {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_update);
 
@@ -66,6 +77,9 @@ public class UpdateActivity extends AppCompatActivity implements View.OnClickLis
         // Set click listener for views
         mImageView.setOnClickListener(this);
         mUpdateButton.setOnClickListener(this);
+
+        // set Value event listener
+        mProfileRef.addValueEventListener(this);
     }
 
     private void init()
@@ -78,7 +92,18 @@ public class UpdateActivity extends AppCompatActivity implements View.OnClickLis
         mImageView = findViewById(R.id.update_profile_pic);
         mProgress = findViewById(R.id.update_progress);
 
-        stRef = FirebaseStorage.getInstance().getReference();
+        stRef = FirebaseStorage
+                .getInstance()
+                .getReference();
+
+        mAuth = FirebaseAuth
+                .getInstance();
+
+        mProfileRef = FirebaseDatabase
+                .getInstance()
+                .getReference("Users")
+                .child(mAuth.getCurrentUser().getUid())
+                .child("Profile");
     }
 
 
@@ -316,8 +341,11 @@ public class UpdateActivity extends AppCompatActivity implements View.OnClickLis
 
     private void imageUpload() throws FileNotFoundException
     {
+        if (mAuth.getCurrentUser().getUid() == null)
+            return;
+
         InputStream inputStream = new FileInputStream(mImageView.getTag().toString());
-        final StorageReference imageRef = stRef.child("images/riversssss");
+        final StorageReference imageRef = stRef.child(mAuth.getCurrentUser().getUid() + "/Profile/" + Calendar.getInstance().getTimeInMillis()+".jpg");
 
         imageRef.putStream(inputStream)
                 .addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
@@ -329,31 +357,72 @@ public class UpdateActivity extends AppCompatActivity implements View.OnClickLis
                                 .addOnSuccessListener(new OnSuccessListener<Uri>() {
                                     @Override
                                     public void onSuccess(Uri uri) {
-                                        mImageView.setImageURI(uri);
+                                        localImageUri = uri;
+                                        Log.d(TAG, "onSuccess: Uri in localImageUri : " + uri);
+                                        uploadData();
                                     }
                                 });
 
                 }
                 })
-                .addOnFailureListener(new OnFailureListener() {
-                    @Override
-                    public void onFailure(@NonNull Exception e) {
-                        Toast.makeText(UpdateActivity.this, "NOT !!!! Upload Success : ", Toast.LENGTH_SHORT).show();
-                    }
-                }).addOnCompleteListener(new OnCompleteListener<UploadTask.TaskSnapshot>() {
+        .addOnFailureListener(new OnFailureListener() {
             @Override
-            public void onComplete(@NonNull Task<UploadTask.TaskSnapshot> task) {
-                if (task.isSuccessful())
-                {
-                    Log.d(TAG, "onComplete: ----------------------->");
-
-
-
-                }
-
+            public void onFailure(@NonNull Exception e) {
+                Log.d(TAG, "onFailure: Image did not upload");
 
             }
         });
     }
 
+    private void uploadData()
+    {
+        String name, about, phone, gender, email, profileUri;
+        name = mFullName.getText().toString().trim();
+        about = mAbout.getText().toString().trim();
+        phone = mPhoneNumber.getText().toString().trim();
+        gender = getGender();
+        email = Objects.requireNonNull(mAuth.getCurrentUser()).getEmail();
+        profileUri = localImageUri.toString();
+
+
+        UserModel userModel = new UserModel(name, about, phone, gender, email, profileUri);
+
+        mProfileRef.setValue(userModel)
+                .addOnSuccessListener(new OnSuccessListener<Void>() {
+                    @Override
+                    public void onSuccess(Void aVoid) {
+                        Log.d(TAG, "onSuccess: Successfully Upload data :");
+                    }
+                })
+                .addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        Log.e(TAG, "onFailure: Did not upload data successfully : ", e);
+                    }
+                });
+
+    }
+
+
+    private String getGender()
+    {
+        int selectedid = mRadioGroup.getCheckedRadioButtonId();
+
+        if (selectedid == R.id.update_male)
+            return "Male";
+        else
+            return "Female";
+    }
+
+    @Override
+    public void onDataChange(@NonNull DataSnapshot dataSnapshot)
+    {
+        Log.d(TAG, "onDataChange: dataSnapshot : " + dataSnapshot);
+    }
+
+    @Override
+    public void onCancelled(@NonNull DatabaseError databaseError)
+    {
+        Log.d(TAG, "onCancelled: databaseError : " + databaseError);
+    }
 }
