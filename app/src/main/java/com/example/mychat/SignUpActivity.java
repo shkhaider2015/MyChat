@@ -4,6 +4,7 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
 import android.util.Patterns;
@@ -15,6 +16,7 @@ import android.widget.RadioButton;
 import android.widget.RadioGroup;
 import android.widget.TextView;
 
+import com.example.mychat.Models.UserModel;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.Task;
@@ -82,7 +84,7 @@ public class SignUpActivity extends AppCompatActivity {
         String password = mPassword.getText().toString().trim();
         String phone = mPhoneNumber.getText().toString().trim();
         int genderID = mRadioGroup.getCheckedRadioButtonId();
-        int gender = 0;
+        String gender = "";
 
         if (name.isEmpty())
         {
@@ -128,14 +130,14 @@ public class SignUpActivity extends AppCompatActivity {
         }
 
         if (genderID == R.id.sign_up_male)
-            gender = 1;
+            gender = "Male";
         else
-            gender = 2;
+            gender = "Female";
 
         uploadInfo(name, email, password, phone, gender);
     }
 
-    private void uploadInfo(final String name, final String email, String pass, final String phone, final int gender)
+    private void uploadInfo(final String name, final String email, String pass, final String phone, final String gender)
     {
         mProgressbar.setVisibility(View.VISIBLE);
         mAuth.createUserWithEmailAndPassword(email, pass)
@@ -148,18 +150,19 @@ public class SignUpActivity extends AppCompatActivity {
                         {
                             Log.d(TAG, "onComplete: Task : Successful");
 
-                            User user = new User(name, email, phone, gender);
+                            UserModel userModel = new UserModel(name, "", phone, gender, email, "");
 
                             // Upload Information To Firebase database
                             mDatabase.getReference("Users")
                                     .child(mAuth.getUid().toString())
                                     .child("Profile")
-                                    .setValue(user);
+                                    .setValue(userModel);
 
                             // Update user info
                             UserProfileChangeRequest changeRequest = new UserProfileChangeRequest
                                     .Builder()
                                     .setDisplayName(name)
+                                    .setPhotoUri(Uri.parse(""))
                                     .build();
 
 

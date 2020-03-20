@@ -39,6 +39,7 @@ import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
+import com.squareup.picasso.Picasso;
 
 import java.io.ByteArrayOutputStream;
 import java.io.FileInputStream;
@@ -102,7 +103,8 @@ public class UpdateActivity extends AppCompatActivity implements View.OnClickLis
 
         mProfileRef = FirebaseDatabase
                 .getInstance()
-                .getReference(mAuth.getCurrentUser().getUid())
+                .getReference("Users")
+                .child(mAuth.getCurrentUser().getUid())
                 .child("Profile");
     }
 
@@ -437,7 +439,11 @@ public class UpdateActivity extends AppCompatActivity implements View.OnClickLis
             {
                 UserModel userModel = dataSnapshot.getValue(UserModel.class);
 
-                mImageView.setImageURI(Uri.parse(userModel.getImageUri()));
+                Picasso
+                        .get()
+                        .load(Uri.parse("gs://mychatapp-fdd51.appspot.com/25CyTNduUZRWO78YWxcGzCYP65J2/Profile/1584696703062.jpg"))
+                        .into(mImageView);
+
                 mFullName.setText(userModel.getName());
                 mAbout.setText(userModel.getAbout());
                 mPhoneNumber.setText(userModel.getPhone());
