@@ -13,6 +13,7 @@ import android.provider.MediaStore;
 import android.util.Log;
 
 import java.io.ByteArrayOutputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 
@@ -42,6 +43,20 @@ public class ImageUtility {
         return byteBuffer.toByteArray();
     }
 
+    public static InputStream getStream(Uri uri, Context context)
+    {
+        InputStream iStream = null;
+        try
+        {
+            iStream = context.getContentResolver().openInputStream(uri);
+        }catch (FileNotFoundException e)
+        {
+            Log.e(TAG, "getStream: File Not Found : ", e);
+        }
+
+        return iStream;
+    }
+
     public static Bitmap getResizedBitmap(Bitmap image, int maxSize) {
         int width = image.getWidth();
         int height = image.getHeight();
@@ -56,6 +71,7 @@ public class ImageUtility {
         }
         return Bitmap.createScaledBitmap(image, width, height, true);
     }
+
 
     public static Uri getImageUri(Context inContext, Bitmap inImage) {
         ByteArrayOutputStream bytes = new ByteArrayOutputStream();

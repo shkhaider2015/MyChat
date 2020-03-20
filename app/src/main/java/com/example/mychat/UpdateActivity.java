@@ -266,6 +266,14 @@ public class UpdateActivity extends AppCompatActivity implements View.OnClickLis
             if (data != null)
             {
                 Uri contentUri = data.getData();
+                Bitmap resizeBitMap = null;
+                try {
+                    resizeBitMap = ImageUtility.getResizedBitmap(ImageUtility.getImage(ImageUtility.getBytes(ImageUtility.getStream(contentUri, this))), 200);
+                }catch (IOException e)
+                {
+                    Log.e(TAG, "onActivityResult: IO Exception : ", e);
+                }
+
                 mImageView.setImageURI(contentUri);
                 mImageView.setTag(ImageUtility.getPath(this, contentUri));
                 Log.d(TAG, "onActivityResult: data.getData() : " + contentUri);
@@ -286,6 +294,7 @@ public class UpdateActivity extends AppCompatActivity implements View.OnClickLis
                 else
                 {
                     Bitmap imgBitmap = (Bitmap) Objects.requireNonNull(data.getExtras()).get("data");
+                    Bitmap resizeBitMap = ImageUtility.getResizedBitmap(imgBitmap, 200);
                     mImageView.setImageBitmap(imgBitmap);
                     mImageView.setTag(ImageUtility.getPath(this, ImageUtility.getImageUri(this, imgBitmap) ));
                     Log.d(TAG, "onActivityResult: data.getData().getExtra() : " + imgBitmap);
@@ -323,7 +332,7 @@ public class UpdateActivity extends AppCompatActivity implements View.OnClickLis
                 break;
             case R.id.update_button:
                 //handle
-                mProgress.setVisibility(View.VISIBLE);
+                changeProgressBar(1);
 //                uploadDataToFirebase();
                 check();
                 break;
@@ -346,7 +355,9 @@ public class UpdateActivity extends AppCompatActivity implements View.OnClickLis
         if (mAuth.getCurrentUser().getUid() == null)
             return;
 
+
         InputStream inputStream = new FileInputStream(mImageView.getTag().toString());
+        Log.d(TAG, "imageUpload: INPUTSTREAM : " + inputStream);
         final StorageReference imageRef = stRef.child(mAuth.getCurrentUser().getUid() + "/Profile/" + Calendar.getInstance().getTimeInMillis()+".jpg");
 
         imageRef.putStream(inputStream)
@@ -363,14 +374,28 @@ public class UpdateActivity extends AppCompatActivity implements View.OnClickLis
                                         Log.d(TAG, "onSuccess: Uri in localImageUri : " + uri);
                                         uploadData();
                                     }
-                                });
+                                })
+                        .addOnFailureListener(new OnFailureListener() {
+                            @Override
+                            public void onFailure(@NonNull Exception e) {
+                                changeProgressBar(0);
+                            }
+                        });
 
                 }
+                })
+                .addOnCompleteListener(new OnCompleteListener<UploadTask.TaskSnapshot>() {
+                    @Override
+                    public void onComplete(@NonNull Task<UploadTask.TaskSnapshot> task) {
+                        if (task.isSuccessful())
+                            Log.d(TAG, "onComplete: " + task.getResult());
+                    }
                 })
         .addOnFailureListener(new OnFailureListener() {
             @Override
             public void onFailure(@NonNull Exception e) {
                 Log.d(TAG, "onFailure: Image did not upload");
+                changeProgressBar(0);
 
             }
         });
@@ -400,6 +425,7 @@ public class UpdateActivity extends AppCompatActivity implements View.OnClickLis
                     @Override
                     public void onFailure(@NonNull Exception e) {
                         Log.e(TAG, "onFailure: Did not upload data successfully : ", e);
+                        changeProgressBar(0);
                     }
                 });
 
@@ -426,11 +452,13 @@ public class UpdateActivity extends AppCompatActivity implements View.OnClickLis
     @Override
     public void onCancelled(@NonNull DatabaseError databaseError)
     {
+        changeProgressBar(0);
         Log.d(TAG, "onCancelled: Failed to read database : " + databaseError);
     }
 
     private void updateUI(DataSnapshot dataSnapshot)
     {
+        changeProgressBar(0);
         FirebaseUser user = mAuth.getCurrentUser();
 
         if (NetworkUtility.getConnectionType(this) != 0 && NetworkUtility.isInternetAvailable())
@@ -441,7 +469,8 @@ public class UpdateActivity extends AppCompatActivity implements View.OnClickLis
 
                 Picasso
                         .get()
-                        .load(Uri.parse("gs://mychatapp-fdd51.appspot.com/25CyTNduUZRWO78YWxcGzCYP65J2/Profile/1584696703062.jpg"))
+                        .load(Uri.parse(userModel.getImageUri()))
+                        .placeholder(R.mipmap.ic_launcher)
                         .into(mImageView);
 
                 mFullName.setText(userModel.getName());
@@ -465,5 +494,16 @@ public class UpdateActivity extends AppCompatActivity implements View.OnClickLis
 
         }
 
+    }
+
+    private void changeProgressBar(int state)
+    {
+        switch (state)
+        {
+            case 1:
+                mProgress.setVisibility(View.VISIBLE);
+            case 0:
+                mProgress.setVisibility(View.GONE);
+        }
     }
 }
