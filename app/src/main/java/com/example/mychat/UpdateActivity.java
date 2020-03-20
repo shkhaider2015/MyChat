@@ -437,8 +437,15 @@ public class UpdateActivity extends AppCompatActivity implements View.OnClickLis
             {
                 UserModel userModel = dataSnapshot.getValue(UserModel.class);
 
-//                mImageView.setImageURI(Uri.parse(dataSnapshot.child("Profile").child("imageUri").getValue().toString()));
-//                mFullName.setText(dataSnapshot.child("Profile").child("name").getValue().toString());
+                mImageView.setImageURI(Uri.parse(userModel.getImageUri()));
+                mFullName.setText(userModel.getName());
+                mAbout.setText(userModel.getAbout());
+                mPhoneNumber.setText(userModel.getPhone());
+                if (userModel.getGender().equalsIgnoreCase("male"))
+                    mRadioGroup.check(R.id.update_male);
+                else
+                    mRadioGroup.check(R.id.update_female);
+
 
                 Log.d(TAG, "updateUI: TESTING ---------> " + userModel.phone);
             }
