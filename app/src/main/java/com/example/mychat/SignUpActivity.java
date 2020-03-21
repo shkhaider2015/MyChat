@@ -15,6 +15,7 @@ import android.widget.ProgressBar;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.example.mychat.Models.UserModel;
 import com.google.android.gms.tasks.OnCompleteListener;
@@ -164,6 +165,25 @@ public class SignUpActivity extends AppCompatActivity {
                                     .setDisplayName(name)
                                     .setPhotoUri(Uri.parse(""))
                                     .build();
+
+                            FirebaseUser user = mAuth.getCurrentUser();
+                            user.updateProfile(changeRequest);
+
+                            mAuth.updateCurrentUser(user)
+                                    .addOnCompleteListener(new OnCompleteListener<Void>() {
+                                        @Override
+                                        public void onComplete(@NonNull Task<Void> task)
+                                        {
+                                            if (task.isSuccessful())
+                                                Log.d(TAG, "onComplete: Profile Update successfully");
+                                        }
+                                    })
+                                    .addOnFailureListener(new OnFailureListener() {
+                                        @Override
+                                        public void onFailure(@NonNull Exception e) {
+                                            Log.d(TAG, "onFailure: Profile did not update successfully ERROR : " + e);
+                                        }
+                                    });
 
 
 

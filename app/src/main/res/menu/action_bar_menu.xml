@@ -11,6 +11,10 @@
         android:title="Update Profile"/>
 
     <item
+        android:id="@+id/menu_create_post"
+        android:title="Create Post"/>
+
+    <item
         android:id="@+id/action_search"
         android:icon="@drawable/ic_action_action_search"
         android:orderInCategory="100"

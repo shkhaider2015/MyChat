@@ -13,6 +13,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.Toast;
 
+import com.example.mychat.Activities.PostActivity;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.miguelcatalan.materialsearchview.MaterialSearchView;
@@ -66,6 +67,10 @@ public class HomeActivity extends AppCompatActivity {
                 break;
             case R.id.menu_update_profile:
                 startActivity(new Intent(HomeActivity.this, UpdateActivity.class));
+                tmp = true;
+                break;
+            case R.id.menu_create_post:
+                startActivity(new Intent(HomeActivity.this, PostActivity.class));
                 tmp = true;
                 break;
         }
