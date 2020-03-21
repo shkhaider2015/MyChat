@@ -33,6 +33,9 @@ dependencies {
     // Card View
     implementation 'androidx.cardview:cardview:1.0.0'
 
+    // Recycler View
+    implementation "androidx.recyclerview:recyclerview:1.1.0"
+
     // Circuler Image View
     implementation 'de.hdodenhof:circleimageview:3.1.0'
 

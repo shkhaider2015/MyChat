@@ -1,3 +1,9 @@
 <resources>
     <string name="app_name">My Chat</string>
+    <string name="share">Share</string>
+    <string name="comment">Comment</string>
+    <string name="like">Like</string>
+    <string name="hello_my_name_is_shakeel_haider_and_i_am_full_stack_python_3_x_and_java_11_developer">Hello My name is shakeel haider and i am full stack python 3.x and java 11 developer</string>
+    <string name="_13_april_2020">13 april 2020</string>
+    <string name="shakeel_haider">Shakeel haider</string>
 </resources>

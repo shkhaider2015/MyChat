@@ -2,6 +2,9 @@ package com.example.mychat;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.constraintlayout.widget.ConstraintLayout;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import android.content.Context;
 import android.content.Intent;
@@ -14,16 +17,26 @@ import android.view.MenuItem;
 import android.widget.Toast;
 
 import com.example.mychat.Activities.PostActivity;
+import com.example.mychat.Adapters.PostAdapter;
+import com.example.mychat.Models.PostModel;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 import com.miguelcatalan.materialsearchview.MaterialSearchView;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 
-public class HomeActivity extends AppCompatActivity {
+public class HomeActivity extends AppCompatActivity implements ValueEventListener {
     private static final String TAG = "HomeActivity";
 
     private MaterialSearchView searchView;
+    private List<PostModel> postModelList;
+    private RecyclerView mRecyclerView;
 
     FirebaseAuth mAuth;
 
@@ -41,6 +54,16 @@ public class HomeActivity extends AppCompatActivity {
     {
         mAuth = FirebaseAuth.getInstance();
         searchView = findViewById(R.id.home_search_view);
+        mRecyclerView = findViewById(R.id.home_recycler_view);
+        RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(getApplicationContext());
+        mRecyclerView.setLayoutManager(layoutManager);
+
+        postModelList = new ArrayList<>();
+
+        FirebaseDatabase
+                .getInstance()
+                .getReference("Posts")
+                .addValueEventListener(this);
     }
 
     @Override
@@ -112,6 +135,8 @@ public class HomeActivity extends AppCompatActivity {
         });
     }
 
+
+
     @Override
     public void onBackPressed() {
         if (searchView.isSearchOpen()) {
@@ -119,5 +144,30 @@ public class HomeActivity extends AppCompatActivity {
         } else {
             super.onBackPressed();
         }
+    }
+
+    @Override
+    public void onDataChange(@NonNull DataSnapshot dataSnapshot)
+    {
+        for (DataSnapshot parent : dataSnapshot.getChildren())
+        {
+            Log.d(TAG, "onDataChange: Parent Children : " + parent);
+            for (DataSnapshot children : parent.getChildren())
+            {
+                PostModel postModel = children.getValue(PostModel.class);
+                postModelList.add(postModel);
+                Log.d(TAG, "onDataChange: ----------------> : username " + postModel.getUserName());
+
+            }
+        }
+
+        PostAdapter adapter = new PostAdapter(HomeActivity.this, postModelList);
+        mRecyclerView.setAdapter(adapter);
+
+    }
+
+    @Override
+    public void onCancelled(@NonNull DatabaseError databaseError) {
+
     }
 }
