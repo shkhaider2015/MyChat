@@ -19,8 +19,9 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".Activities.PostActivity"></activity>
-        <activity android:name=".UpdateActivity"></activity>
+        <activity android:name=".Activities.DisplayProfileActivity"></activity>
+        <activity android:name=".Activities.PostActivity" />
+        <activity android:name=".UpdateActivity" />
         <activity android:name=".UpdateProfileActivity" />
         <activity android:name=".HomeActivity" />
         <activity android:name=".SignUpActivity" />

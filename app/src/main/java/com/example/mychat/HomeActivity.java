@@ -2,14 +2,10 @@ package com.example.mychat;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import android.content.Context;
 import android.content.Intent;
-import android.net.ConnectivityManager;
-import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
@@ -20,7 +16,6 @@ import com.example.mychat.Activities.PostActivity;
 import com.example.mychat.Adapters.PostAdapter;
 import com.example.mychat.Models.PostModel;
 import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.FirebaseDatabase;
@@ -31,7 +26,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
-public class HomeActivity extends AppCompatActivity implements ValueEventListener {
+public class HomeActivity extends AppCompatActivity implements ValueEventListener
+{
     private static final String TAG = "HomeActivity";
 
     private MaterialSearchView searchView;
@@ -41,7 +37,8 @@ public class HomeActivity extends AppCompatActivity implements ValueEventListene
     FirebaseAuth mAuth;
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    protected void onCreate(Bundle savedInstanceState)
+    {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_home);
         Objects.requireNonNull(getSupportActionBar()).show();
@@ -67,7 +64,8 @@ public class HomeActivity extends AppCompatActivity implements ValueEventListene
     }
 
     @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
+    public boolean onCreateOptionsMenu(Menu menu)
+    {
         getMenuInflater().inflate(R.menu.action_bar_menu, menu);
 
         MenuItem item = menu.findItem(R.id.action_search);
@@ -76,7 +74,8 @@ public class HomeActivity extends AppCompatActivity implements ValueEventListene
     }
 
     @Override
-    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+    public boolean onOptionsItemSelected(@NonNull MenuItem item)
+    {
 
         boolean tmp = false;
 
@@ -138,7 +137,8 @@ public class HomeActivity extends AppCompatActivity implements ValueEventListene
 
 
     @Override
-    public void onBackPressed() {
+    public void onBackPressed()
+    {
         if (searchView.isSearchOpen()) {
             searchView.closeSearch();
         } else {
@@ -167,7 +167,8 @@ public class HomeActivity extends AppCompatActivity implements ValueEventListene
     }
 
     @Override
-    public void onCancelled(@NonNull DatabaseError databaseError) {
+    public void onCancelled(@NonNull DatabaseError databaseError)
+    {
 
     }
 }
