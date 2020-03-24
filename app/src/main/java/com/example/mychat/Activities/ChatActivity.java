@@ -13,6 +13,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 
+import com.example.mychat.Adapters.MessageAdapter;
 import com.example.mychat.Models.MessageModel;
 import com.example.mychat.R;
 import com.google.android.gms.tasks.OnCompleteListener;
@@ -40,6 +41,7 @@ public class ChatActivity extends AppCompatActivity implements ValueEventListene
     Button mSendButton;
     String mUser_sender_id, muser_receiver_id;
     private List<MessageModel> messageModelList;
+    DatabaseReference globRef = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -58,6 +60,7 @@ public class ChatActivity extends AppCompatActivity implements ValueEventListene
         mEditText = findViewById(R.id.chat_edittext_chatbox);
         mSendButton = findViewById(R.id.chat_button_chatbox_send);
 
+        mSendButton.setOnClickListener(this);
         mUser_sender_id = Objects.requireNonNull(FirebaseAuth
                 .getInstance()
                 .getCurrentUser())
@@ -68,18 +71,25 @@ public class ChatActivity extends AppCompatActivity implements ValueEventListene
 
         messageModelList = new ArrayList<>();
 
-        FirebaseDatabase
+        globRef = FirebaseDatabase
                 .getInstance()
-                .getReference("Chat")
-                .child(mUser_sender_id + muser_receiver_id)
-                .child(String.valueOf(Calendar.getInstance().getTimeInMillis()))
-                .addValueEventListener(this);
+                .getReference("Chat");
+        globRef.addValueEventListener(this);
     }
 
     @Override
     public void onDataChange(@NonNull DataSnapshot dataSnapshot)
     {
         Log.d(TAG, "onDataChange: DATASNAPSHOT : " + dataSnapshot.getChildren().toString());
+        for (DataSnapshot parent : dataSnapshot.getChildren())
+        {
+            Log.d(TAG, "onDataChange: Parent " + parent);
+            if (getMessageId(parent.getKey()))
+            {
+                Log.d(TAG, "onDataChange: Matched");
+                updateUI();
+            }
+        }
     }
 
     @Override
@@ -108,14 +118,13 @@ public class ChatActivity extends AppCompatActivity implements ValueEventListene
         String image_uri = Objects.requireNonNull(FirebaseAuth.getInstance().getCurrentUser().getPhotoUrl()).toString();
 
         MessageModel messageModel = new MessageModel(senderId, name, message_data, date_time, image_uri);
-
-        DatabaseReference mRef = FirebaseDatabase
-                .getInstance()
-                .getReference("Chat")
+        messageModelList.add(messageModel);
+        DatabaseReference mMessageRef = globRef
                 .child(mUser_sender_id + muser_receiver_id)
                 .child(String.valueOf(Calendar.getInstance().getTimeInMillis()));
 
-        mRef.setValue(messageModel)
+
+        mMessageRef.setValue(messageModel)
                 .addOnCompleteListener(new OnCompleteListener<Void>() {
                     @Override
                     public void onComplete(@NonNull Task<Void> task) {
@@ -128,5 +137,23 @@ public class ChatActivity extends AppCompatActivity implements ValueEventListene
                         Log.d(TAG, "onFailure: Message Sent Failure");
                     }
                 });
+        updateUI();
+    }
+
+    private void updateUI()
+    {
+        MessageAdapter messageAdapter = new MessageAdapter(ChatActivity.this, messageModelList, FirebaseAuth.getInstance().getCurrentUser());
+        mRecyclerView.setAdapter(messageAdapter);
+    }
+
+    private boolean getMessageId(String chatId)
+    {
+
+        if (mUser_sender_id.contains(chatId))
+        {
+            return true;
+        }
+        else
+            return false;
     }
 }

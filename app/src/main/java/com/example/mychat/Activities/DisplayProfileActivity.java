@@ -79,6 +79,8 @@ public class DisplayProfileActivity extends AppCompatActivity implements ValueEv
         mEmail.setText(model.getEmail());
         mPhone_Number.setText(model.getPhone());
         mGender.setText(model.getGender());
+
+        mChat_button.setOnClickListener(this);
     }
 
     @Override
