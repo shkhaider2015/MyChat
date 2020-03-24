@@ -3,7 +3,9 @@ package com.example.mychat.Activities;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.content.Intent;
 import android.os.Bundle;
+import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 
@@ -18,7 +20,7 @@ import com.squareup.picasso.Picasso;
 
 import de.hdodenhof.circleimageview.CircleImageView;
 
-public class DisplayProfileActivity extends AppCompatActivity implements ValueEventListener {
+public class DisplayProfileActivity extends AppCompatActivity implements ValueEventListener, View.OnClickListener {
     private static final String TAG = "DisplayProfileActivity";
 
     private CircleImageView mImage;
@@ -26,6 +28,7 @@ public class DisplayProfileActivity extends AppCompatActivity implements ValueEv
     private TextView mName, mEmail, mPhone_Number, mGender;
 
     private PostModel postModel;
+    private String display_person_id;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -33,6 +36,7 @@ public class DisplayProfileActivity extends AppCompatActivity implements ValueEv
         setContentView(R.layout.activity_display_profile);
         init();
         postModel = (PostModel) getIntent().getSerializableExtra("myclass");
+        display_person_id = postModel.getId();
         loadInfo();
     }
 
@@ -87,6 +91,20 @@ public class DisplayProfileActivity extends AppCompatActivity implements ValueEv
     @Override
     public void onCancelled(@NonNull DatabaseError databaseError)
     {
+
+    }
+
+    @Override
+    public void onClick(View v)
+    {
+        switch (v.getId())
+        {
+            case R.id.display_chat_button:
+                Intent intent = new Intent(DisplayProfileActivity.this, ChatActivity.class);
+                intent.putExtra("receiver_id", display_person_id);
+                startActivity(intent);
+                break;
+        }
 
     }
 }

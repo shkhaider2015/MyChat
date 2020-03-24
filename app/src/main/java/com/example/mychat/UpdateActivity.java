@@ -31,6 +31,7 @@ import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.auth.UserProfileChangeRequest;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -412,13 +413,38 @@ public class UpdateActivity extends AppCompatActivity implements View.OnClickLis
         profileUri = localImageUri.toString();
 
 
-        UserModel userModel = new UserModel(name, about, phone, gender, email, profileUri);
+        final UserModel userModel = new UserModel(name, about, phone, gender, email, profileUri);
 
         mProfileRef.setValue(userModel)
                 .addOnSuccessListener(new OnSuccessListener<Void>() {
                     @Override
                     public void onSuccess(Void aVoid) {
                         Log.d(TAG, "onSuccess: Successfully Upload data :");
+
+                        // Update user info
+                        UserProfileChangeRequest changeRequest = new UserProfileChangeRequest
+                                .Builder()
+                                .setDisplayName(userModel.getName())
+                                .setPhotoUri(Uri.parse(userModel.getImageUri()))
+                                .build();
+
+                        FirebaseUser user = mAuth.getCurrentUser();
+                        user.updateProfile(changeRequest);
+
+                        mAuth.updateCurrentUser(user)
+                                .addOnCompleteListener(new OnCompleteListener<Void>() {
+                                    @Override
+                                    public void onComplete(@NonNull Task<Void> task) {
+                                        if (task.isSuccessful())
+                                            Log.d(TAG, "onComplete: Profile Update Successfully");
+                                    }
+                                })
+                                .addOnFailureListener(new OnFailureListener() {
+                                    @Override
+                                    public void onFailure(@NonNull Exception e) {
+                                        Log.d(TAG, "onFailure: Profile Update Failure");
+                                    }
+                                });
                     }
                 })
                 .addOnFailureListener(new OnFailureListener() {
