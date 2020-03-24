@@ -70,7 +70,7 @@ public class DisplayProfileActivity extends AppCompatActivity implements ValueEv
                 .load(model.getImageUri())
                 .placeholder(R.mipmap.ic_launcher)
                 .into(mImage);
-        
+
         mName.setText(model.getName());
         mEmail.setText(model.getEmail());
         mPhone_Number.setText(model.getPhone());
@@ -85,7 +85,8 @@ public class DisplayProfileActivity extends AppCompatActivity implements ValueEv
     }
 
     @Override
-    public void onCancelled(@NonNull DatabaseError databaseError) {
+    public void onCancelled(@NonNull DatabaseError databaseError)
+    {
 
     }
 }
