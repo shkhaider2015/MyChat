@@ -2,6 +2,7 @@ package com.example.mychat.Adapters;
 
 
 import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -14,6 +15,8 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.mychat.Activities.DisplayProfileActivity;
+import com.example.mychat.HomeActivity;
 import com.example.mychat.Models.PostModel;
 import com.example.mychat.R;
 import com.google.android.gms.dynamic.ObjectWrapper;
@@ -50,9 +53,10 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.ViewHolder>{
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position)
     {
-        PostModel postModel = data.get(position);
+        final PostModel postModel = data.get(position);
 
         final int temp_position = position;
+        final PostModel temp_postmodel = postModel;
 
 
         Picasso
@@ -69,31 +73,31 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.ViewHolder>{
         holder.mLike.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                onSelfClick(temp_position, v.getId());
+                onSelfClick(temp_position, v.getId(), postModel);
             }
         });
         holder.mComment.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                onSelfClick(temp_position, v.getId());
+                onSelfClick(temp_position, v.getId(), postModel);
             }
         });
         holder.mShare.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                onSelfClick(temp_position, v.getId());
+                onSelfClick(temp_position, v.getId(), postModel);
             }
         });
         holder.mName.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                onSelfClick(temp_position, v.getId());
+                onSelfClick(temp_position, v.getId(), postModel);
             }
         });
         holder.imageView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                onSelfClick(temp_position, v.getId());
+                onSelfClick(temp_position, v.getId(), postModel);
             }
         });
 
@@ -104,13 +108,16 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.ViewHolder>{
         return data.size();
     }
 
-    private void onSelfClick(int position, int id)
+    private void onSelfClick(int position, int id, PostModel postModel)
     {
         switch (id)
         {
             case R.id.post_image:
                 //
                 Log.d(TAG, "onClick: Image Clicked" + position);
+                Intent intent = new Intent(mCTX.getApplicationContext(), DisplayProfileActivity.class);
+                intent.putExtra("myclass", postModel);
+                mCTX.startActivity(intent);
 
                 break;
             case R.id.post_name:

@@ -1,6 +1,8 @@
 package com.example.mychat.Models;
 
-public class PostModel
+import java.io.Serializable;
+
+public class PostModel implements Serializable
 {
     public String postDetail;
     public String userName;
