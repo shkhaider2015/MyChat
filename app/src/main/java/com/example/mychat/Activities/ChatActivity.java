@@ -84,9 +84,12 @@ public class ChatActivity extends AppCompatActivity implements ValueEventListene
         for (DataSnapshot parent : dataSnapshot.getChildren())
         {
             Log.d(TAG, "onDataChange: Parent " + parent);
-            if (getMessageId(parent.getKey()))
+            for (DataSnapshot child : parent.getChildren())
             {
-                Log.d(TAG, "onDataChange: Matched");
+                Log.d(TAG, "onDataChange: Children : " + child);
+                MessageModel messageModel = child.getValue(MessageModel.class);
+                messageModelList.add(messageModel);
+                Log.d(TAG, "onDataChange: MESSAGE_MODEL_LIST : " + messageModelList.get(0).getName());
                 updateUI();
             }
         }
