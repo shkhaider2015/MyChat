@@ -75,6 +75,8 @@ public class ChatActivity extends AppCompatActivity implements ValueEventListene
                 .getInstance()
                 .getReference("Chat");
         globRef.addValueEventListener(this);
+
+        updateUI();
     }
 
     @Override
@@ -96,7 +98,6 @@ public class ChatActivity extends AppCompatActivity implements ValueEventListene
             }
 
         }
-        updateUI();
     }
 
     @Override
@@ -137,7 +138,7 @@ public class ChatActivity extends AppCompatActivity implements ValueEventListene
                     public void onComplete(@NonNull Task<Void> task) {
                         Log.d(TAG, "onComplete: Message Sent Successfully");
                         if (task.isSuccessful())
-                            updateUI();
+                            return;
                     }
                 })
                 .addOnFailureListener(new OnFailureListener() {
