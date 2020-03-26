@@ -24,7 +24,7 @@ import de.hdodenhof.circleimageview.CircleImageView;
 
 import static androidx.constraintlayout.widget.Constraints.TAG;
 
-public class MessageAdapter extends RecyclerView.Adapter {
+public class MessageAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
     private static final int VIEW_TYPE_MESSAGE_SENT = 1;
     private static final int VIEW_TYPE_MESSAGE_RECEIVE = 2;
@@ -35,6 +35,7 @@ public class MessageAdapter extends RecyclerView.Adapter {
 
     public MessageAdapter(Context mCTX, List<MessageModel> mMessageList, FirebaseUser muser)
     {
+        Log.d(TAG, "MessageAdapter: ADAPTER RUNNING ....");
         this.mCTX = mCTX;
         this.mMessageList = mMessageList;
         this.muser = muser;
@@ -44,6 +45,7 @@ public class MessageAdapter extends RecyclerView.Adapter {
     @Override
     public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType)
     {
+        Log.d(TAG, "onCreateViewHolder: VIEWTYPE = " + viewType);
         View view;
 
         if (viewType == VIEW_TYPE_MESSAGE_SENT)
@@ -64,15 +66,18 @@ public class MessageAdapter extends RecyclerView.Adapter {
         return null;
     }
 
+
+
     @Override
     public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position)
     {
+        Log.d(TAG, "onBindViewHolder: Running ");
         MessageModel messageModel = mMessageList.get(position);
 
         switch (holder.getItemViewType())
         {
             case VIEW_TYPE_MESSAGE_SENT:
-
+                ((SentMessageHolder) holder).bind(messageModel);
                 break;
             case VIEW_TYPE_MESSAGE_RECEIVE:
                 ((ReceiveMessageHolder) holder).bind(messageModel);
@@ -84,15 +89,17 @@ public class MessageAdapter extends RecyclerView.Adapter {
     @Override
     public int getItemCount()
     {
+        Log.d(TAG, "getItemCount: Running");
         return mMessageList.size();
     }
 
     @Override
     public int getItemViewType(int position)
     {
+        Log.d(TAG, "getItemViewType: Running ");
         MessageModel messageModel = mMessageList.get(position);
 
-        if (messageModel.getId() == muser.getUid())
+        if (messageModel.getId().equalsIgnoreCase(muser.getUid()))
             return VIEW_TYPE_MESSAGE_SENT;
         else
             return VIEW_TYPE_MESSAGE_RECEIVE;

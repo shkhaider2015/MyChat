@@ -83,16 +83,20 @@ public class ChatActivity extends AppCompatActivity implements ValueEventListene
         Log.d(TAG, "onDataChange: DATASNAPSHOT : " + dataSnapshot.getChildren().toString());
         for (DataSnapshot parent : dataSnapshot.getChildren())
         {
-            Log.d(TAG, "onDataChange: Parent " + parent);
-            for (DataSnapshot child : parent.getChildren())
+            Log.d(TAG, "onDataChange: Chiled key " + parent.getKey());
+            if (getMessageId(parent.getKey()))
             {
-                Log.d(TAG, "onDataChange: Children : " + child);
-                MessageModel messageModel = child.getValue(MessageModel.class);
-                messageModelList.add(messageModel);
-                Log.d(TAG, "onDataChange: MESSAGE_MODEL_LIST : " + messageModelList.get(0).getName());
-                updateUI();
+                Log.d(TAG, "onDataChange: KEY MATCHED");
+                for (DataSnapshot child : parent.getChildren())
+                {
+                    MessageModel messageModel = child.getValue(MessageModel.class);
+                    messageModelList.add(messageModel);
+
+                }
             }
+
         }
+        updateUI();
     }
 
     @Override
@@ -132,6 +136,8 @@ public class ChatActivity extends AppCompatActivity implements ValueEventListene
                     @Override
                     public void onComplete(@NonNull Task<Void> task) {
                         Log.d(TAG, "onComplete: Message Sent Successfully");
+                        if (task.isSuccessful())
+                            updateUI();
                     }
                 })
                 .addOnFailureListener(new OnFailureListener() {
@@ -140,19 +146,22 @@ public class ChatActivity extends AppCompatActivity implements ValueEventListene
                         Log.d(TAG, "onFailure: Message Sent Failure");
                     }
                 });
-        updateUI();
+
     }
 
     private void updateUI()
     {
-        MessageAdapter messageAdapter = new MessageAdapter(ChatActivity.this, messageModelList, FirebaseAuth.getInstance().getCurrentUser());
+        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+        Log.d(TAG, "updateUI: UPDATING UI .............");
+        MessageAdapter messageAdapter = new MessageAdapter(ChatActivity.this, messageModelList, user);
+
         mRecyclerView.setAdapter(messageAdapter);
     }
 
     private boolean getMessageId(String chatId)
     {
 
-        if (mUser_sender_id.contains(chatId))
+        if (chatId.contains(mUser_sender_id) && chatId.contains(muser_receiver_id))
         {
             return true;
         }
