@@ -18,6 +18,7 @@ import com.squareup.picasso.Picasso;
 
 import org.w3c.dom.Text;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import de.hdodenhof.circleimageview.CircleImageView;
@@ -37,6 +38,7 @@ public class MessageAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
     {
         Log.d(TAG, "MessageAdapter: ADAPTER RUNNING ....");
         this.mCTX = mCTX;
+        this.mMessageList = new ArrayList<>();
         this.mMessageList = mMessageList;
         this.muser = muser;
     }
@@ -67,6 +69,12 @@ public class MessageAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
     }
 
 
+    public void notifyData(List<MessageModel> data)
+    {
+
+        this.mMessageList = data;
+        notifyDataSetChanged();
+    }
 
     @Override
     public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position)

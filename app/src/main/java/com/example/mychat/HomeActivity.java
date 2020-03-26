@@ -155,7 +155,8 @@ public class HomeActivity extends AppCompatActivity implements ValueEventListene
             for (DataSnapshot children : parent.getChildren())
             {
                 PostModel postModel = children.getValue(PostModel.class);
-                postModelList.add(postModel);
+//                postModelList.add(postModel);
+                postModelList.add(0, postModel);
                 Log.d(TAG, "onDataChange: ----------------> : username " + postModel.getUserName());
 
             }
@@ -163,6 +164,7 @@ public class HomeActivity extends AppCompatActivity implements ValueEventListene
 
         PostAdapter adapter = new PostAdapter(HomeActivity.this, postModelList);
         mRecyclerView.setAdapter(adapter);
+
 
     }
 

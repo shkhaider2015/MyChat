@@ -42,6 +42,7 @@ public class ChatActivity extends AppCompatActivity implements ValueEventListene
     String mUser_sender_id, muser_receiver_id;
     private List<MessageModel> messageModelList;
     DatabaseReference globRef = null;
+    MessageAdapter messageAdapter = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -82,6 +83,8 @@ public class ChatActivity extends AppCompatActivity implements ValueEventListene
     @Override
     public void onDataChange(@NonNull DataSnapshot dataSnapshot)
     {
+        messageModelList = new ArrayList<>();
+        int i = 0;
         Log.d(TAG, "onDataChange: DATASNAPSHOT : " + dataSnapshot.getChildren().toString());
         for (DataSnapshot parent : dataSnapshot.getChildren())
         {
@@ -92,12 +95,23 @@ public class ChatActivity extends AppCompatActivity implements ValueEventListene
                 for (DataSnapshot child : parent.getChildren())
                 {
                     MessageModel messageModel = child.getValue(MessageModel.class);
+
                     messageModelList.add(messageModel);
+                    Log.d(TAG, "onDataChange: Name : " + messageModelList.get(i).getName());
+                    Log.d(TAG, "onDataChange: CountDown " + i++);
+
 
                 }
             }
 
         }
+
+//        if (messageModelList.size() > 0)
+//            messageAdapter.notifyItemInserted(messageModelList.size() - 1);
+
+        updateUI();
+
+
     }
 
     @Override
@@ -137,8 +151,8 @@ public class ChatActivity extends AppCompatActivity implements ValueEventListene
                     @Override
                     public void onComplete(@NonNull Task<Void> task) {
                         Log.d(TAG, "onComplete: Message Sent Successfully");
-                        if (task.isSuccessful())
-                            return;
+
+
                     }
                 })
                 .addOnFailureListener(new OnFailureListener() {
@@ -148,15 +162,19 @@ public class ChatActivity extends AppCompatActivity implements ValueEventListene
                     }
                 });
 
+
+
+        messageAdapter.notifyItemInserted(messageModelList.size() - 1);
     }
 
     private void updateUI()
     {
         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
         Log.d(TAG, "updateUI: UPDATING UI .............");
-        MessageAdapter messageAdapter = new MessageAdapter(ChatActivity.this, messageModelList, user);
+        messageAdapter = new MessageAdapter(ChatActivity.this, messageModelList, user);
 
         mRecyclerView.setAdapter(messageAdapter);
+        mRecyclerView.scrollToPosition(messageAdapter.getItemCount()-1);
     }
 
     private boolean getMessageId(String chatId)
@@ -168,5 +186,11 @@ public class ChatActivity extends AppCompatActivity implements ValueEventListene
         }
         else
             return false;
+    }
+
+    @Override
+    public void onDetachedFromWindow() {
+        super.onDetachedFromWindow();
+
     }
 }
