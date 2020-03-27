@@ -9,4 +9,5 @@
     <string name="image">image</string>
     <string name="friend_request_button">Friend Request</string>
     <string name="start_chat_button">Start Chat</string>
+    <string name="about_your_self">About Your self</string>
 </resources>

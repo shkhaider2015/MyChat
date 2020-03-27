@@ -45,26 +45,34 @@
                 android:id="@+id/update_fullname"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:background="@drawable/edit_text_stroke"
+                android:padding="3dp"
                 android:hint="Full Name"/>
 
             <EditText
                 android:id="@+id/update_about"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:hint="About Your self"
+                android:hint="@string/about_your_self"
                 android:inputType="textMultiLine"
                 android:lines="3"
                 android:minLines="3"
                 android:maxLines="7"
                 android:gravity="top|left"
-                android:scrollbars="vertical"/>
+                android:background="@drawable/edit_text_stroke"
+                android:scrollbars="vertical"
+                android:layout_marginTop="10dp"
+                android:padding="3dp"/>
 
 
             <EditText
                 android:id="@+id/update_phone"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:hint="Phone Number"/>
+                android:hint="Phone Number"
+                android:layout_marginTop="10dp"
+                android:background="@drawable/edit_text_stroke"
+                android:padding="3dp"/>
 
             <RadioGroup
                 android:id="@+id/update_group"

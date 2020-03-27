@@ -149,6 +149,7 @@ public class HomeActivity extends AppCompatActivity implements ValueEventListene
     @Override
     public void onDataChange(@NonNull DataSnapshot dataSnapshot)
     {
+        postModelList = new ArrayList<>();
         for (DataSnapshot parent : dataSnapshot.getChildren())
         {
             Log.d(TAG, "onDataChange: Parent Children : " + parent);

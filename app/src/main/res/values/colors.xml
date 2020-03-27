@@ -3,4 +3,9 @@
     <color name="colorPrimary">#CB3ECE</color>
     <color name="colorPrimaryDark">#CB3ECE</color>
     <color name="colorAccent">#E43775</color>
+
+
+
+
+    <color name="edittextbordervolor">#C3C3C3</color>
 </resources>
