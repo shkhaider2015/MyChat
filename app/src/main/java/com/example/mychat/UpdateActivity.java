@@ -278,6 +278,11 @@ public class UpdateActivity extends AppCompatActivity implements View.OnClickLis
                 mImageView.setImageURI(contentUri);
                 mImageView.setTag(ImageUtility.getPath(this, contentUri));
                 Log.d(TAG, "onActivityResult: data.getData() : " + contentUri);
+                try {
+                    imageUpload();
+                } catch (FileNotFoundException e) {
+                    e.printStackTrace();
+                }
             }
         }
         else if (requestCode == CAMERA_REQUEST_CODE)
@@ -291,6 +296,11 @@ public class UpdateActivity extends AppCompatActivity implements View.OnClickLis
                     mImageView.setImageURI(contentUri);
                     mImageView.setTag(ImageUtility.getPath(this, contentUri));
                     Log.d(TAG, "onActivityResult: data.getData() : " + contentUri);
+                    try {
+                        imageUpload();
+                    } catch (FileNotFoundException e) {
+                        e.printStackTrace();
+                    }
                 }
                 else
                 {
@@ -299,6 +309,11 @@ public class UpdateActivity extends AppCompatActivity implements View.OnClickLis
                     mImageView.setImageBitmap(imgBitmap);
                     mImageView.setTag(ImageUtility.getPath(this, ImageUtility.getImageUri(this, imgBitmap) ));
                     Log.d(TAG, "onActivityResult: data.getData().getExtra() : " + imgBitmap);
+                    try {
+                        imageUpload();
+                    } catch (FileNotFoundException e) {
+                        e.printStackTrace();
+                    }
                 }
             }
 
@@ -335,21 +350,12 @@ public class UpdateActivity extends AppCompatActivity implements View.OnClickLis
                 //handle
                 changeProgressBar(1);
 //                uploadDataToFirebase();
-                check();
+                uploadData();
                 break;
         }
     }
 
-    private void check()
-    {
-        Log.d(TAG, "check: URI : " + mImageView.getTag());
-        try {
-            imageUpload();
-        }catch (FileNotFoundException fe)
-        {
-            Log.e(TAG, "check: ", fe);
-        }
-    }
+
 
     private void imageUpload() throws FileNotFoundException
     {
@@ -359,7 +365,7 @@ public class UpdateActivity extends AppCompatActivity implements View.OnClickLis
 
         InputStream inputStream = new FileInputStream(mImageView.getTag().toString());
         Log.d(TAG, "imageUpload: INPUTSTREAM : " + inputStream);
-        final StorageReference imageRef = stRef.child(mAuth.getCurrentUser().getUid() + "/Profile/" + Calendar.getInstance().getTimeInMillis()+".jpg");
+        final StorageReference imageRef = stRef.child(mAuth.getCurrentUser().getUid() + "/Profile/" + "profile_image" +".jpg");
 
         imageRef.putStream(inputStream)
                 .addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
@@ -373,7 +379,6 @@ public class UpdateActivity extends AppCompatActivity implements View.OnClickLis
                                     public void onSuccess(Uri uri) {
                                         localImageUri = uri;
                                         Log.d(TAG, "onSuccess: Uri in localImageUri : " + uri);
-                                        uploadData();
                                     }
                                 })
                         .addOnFailureListener(new OnFailureListener() {
@@ -410,7 +415,11 @@ public class UpdateActivity extends AppCompatActivity implements View.OnClickLis
         phone = mPhoneNumber.getText().toString().trim();
         gender = getGender();
         email = Objects.requireNonNull(mAuth.getCurrentUser()).getEmail();
-        profileUri = localImageUri.toString();
+        if (localImageUri != null)
+            profileUri = localImageUri.toString();
+        else
+            profileUri = downloadImageUri();
+
 
 
         final UserModel userModel = new UserModel(name, about, phone, gender, email, profileUri);
@@ -455,6 +464,35 @@ public class UpdateActivity extends AppCompatActivity implements View.OnClickLis
                     }
                 });
 
+    }
+
+    private String downloadImageUri()
+    {
+        final String[] url = new String[1];
+
+        StorageReference urlRef = stRef
+                .child(mAuth.getCurrentUser().getUid())
+                .child("Profile")
+                .child("profile_image.jpg");
+
+        urlRef.getDownloadUrl()
+                .addOnCompleteListener(new OnCompleteListener<Uri>() {
+                    @Override
+                    public void onComplete(@NonNull Task<Uri> task)
+                    {
+                        if (task.isSuccessful())
+                            url[0] = task.getResult().toString();
+                    }
+                })
+                .addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e)
+                    {
+                        url[0] = "";
+                    }
+                });
+
+        return url[0];
     }
 
 

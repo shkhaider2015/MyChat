@@ -25,7 +25,7 @@ dependencies {
     implementation 'androidx.appcompat:appcompat:1.1.0'
     implementation 'androidx.constraintlayout:constraintlayout:1.1.3'
 
-    implementation 'com.google.firebase:firebase-auth:19.2.0'
+    implementation 'com.google.firebase:firebase-auth:19.3.0'
     implementation 'com.google.firebase:firebase-database:19.2.1'
     implementation 'com.google.firebase:firebase-storage:19.1.1'
     implementation 'com.google.firebase:firebase-core:17.2.3'
@@ -39,11 +39,15 @@ dependencies {
     // Circuler Image View
     implementation 'de.hdodenhof:circleimageview:3.1.0'
 
+    //circuler progressbar
+    implementation 'com.github.lzyzsd:circleprogress:1.2.1'
+
     // Picasso for taking images
     implementation 'com.squareup.picasso:picasso:2.71828'
 
     // Material Search bar
     implementation 'com.miguelcatalan:materialsearchview:1.4.0'
+
 
 
     testImplementation 'junit:junit:4.13'
