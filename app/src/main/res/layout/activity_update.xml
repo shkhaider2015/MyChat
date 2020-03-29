@@ -23,13 +23,15 @@
 
     <com.github.lzyzsd.circleprogress.DonutProgress
         android:id="@+id/donut_progress"
-        android:layout_width="120dp"
-        android:layout_height="120dp"
+        android:layout_width="135dp"
+        android:layout_height="135dp"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        android:layout_marginTop="70dp"
-        app:donut_progress="30"
+        android:layout_marginTop="65dp"
+        app:donut_progress="10"
+        app:donut_max="100"
+        android:visibility="gone"
         />
 
 

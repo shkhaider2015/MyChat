@@ -13,6 +13,7 @@ import android.content.Intent;
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Handler;
 import android.provider.MediaStore;
 import android.util.Log;
 import android.view.View;
@@ -25,6 +26,7 @@ import android.widget.RadioGroup;
 import android.widget.Toast;
 
 import com.example.mychat.Models.UserModel;
+import com.github.lzyzsd.circleprogress.DonutProgress;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
@@ -61,6 +63,7 @@ public class UpdateActivity extends AppCompatActivity implements View.OnClickLis
     private RadioGroup mRadioGroup;
     private Button mUpdateButton;
     private ProgressBar mProgress;
+    private DonutProgress mDonutProgress;
 
     private Uri localImageUri = null;
 
@@ -94,6 +97,7 @@ public class UpdateActivity extends AppCompatActivity implements View.OnClickLis
         mUpdateButton = findViewById(R.id.update_button);
         mImageView = findViewById(R.id.update_profile_pic);
         mProgress = findViewById(R.id.update_progress);
+        mDonutProgress = findViewById(R.id.donut_progress);
 
         stRef = FirebaseStorage
                 .getInstance()
@@ -279,6 +283,7 @@ public class UpdateActivity extends AppCompatActivity implements View.OnClickLis
                 mImageView.setTag(ImageUtility.getPath(this, contentUri));
                 Log.d(TAG, "onActivityResult: data.getData() : " + contentUri);
                 try {
+                    setmDonutProgress();
                     imageUpload();
                 } catch (FileNotFoundException e) {
                     e.printStackTrace();
@@ -297,6 +302,7 @@ public class UpdateActivity extends AppCompatActivity implements View.OnClickLis
                     mImageView.setTag(ImageUtility.getPath(this, contentUri));
                     Log.d(TAG, "onActivityResult: data.getData() : " + contentUri);
                     try {
+                        setmDonutProgress();
                         imageUpload();
                     } catch (FileNotFoundException e) {
                         e.printStackTrace();
@@ -310,6 +316,7 @@ public class UpdateActivity extends AppCompatActivity implements View.OnClickLis
                     mImageView.setTag(ImageUtility.getPath(this, ImageUtility.getImageUri(this, imgBitmap) ));
                     Log.d(TAG, "onActivityResult: data.getData().getExtra() : " + imgBitmap);
                     try {
+                        setmDonutProgress();
                         imageUpload();
                     } catch (FileNotFoundException e) {
                         e.printStackTrace();
@@ -378,6 +385,50 @@ public class UpdateActivity extends AppCompatActivity implements View.OnClickLis
                                     @Override
                                     public void onSuccess(Uri uri) {
                                         localImageUri = uri;
+
+                                        // update image view
+                                        Picasso
+                                                .get()
+                                                .load(uri)
+                                                .placeholder(R.mipmap.ic_launcher)
+                                                .into(mImageView);
+
+                                        // update profile
+                                        UserProfileChangeRequest changeRequest = new UserProfileChangeRequest.Builder()
+                                                .setPhotoUri(uri)
+                                                .build();
+                                        FirebaseUser user = mAuth.getCurrentUser();
+                                        user.updateProfile(changeRequest);
+                                        mAuth.updateCurrentUser(user)
+                                                .addOnCompleteListener(new OnCompleteListener<Void>() {
+                                                    @Override
+                                                    public void onComplete(@NonNull Task<Void> task)
+                                                    {
+                                                        Log.d(TAG, "onComplete: User profile Update successfully");
+                                                    }
+                                                })
+                                                .addOnFailureListener(new OnFailureListener() {
+                                                    @Override
+                                                    public void onFailure(@NonNull Exception e)
+                                                    {
+                                                        Log.d(TAG, "onFailure: User update failure");
+                                                    }
+                                                });
+
+                                        // update database uri
+                                        DatabaseReference mRef = FirebaseDatabase
+                                                .getInstance()
+                                                .getReference("Users")
+                                                .child(mAuth.getCurrentUser().getUid())
+                                                .child("Profile")
+                                                .child("imageUri");
+                                        mRef.setValue(uri.toString())
+                                                .addOnSuccessListener(new OnSuccessListener<Void>() {
+                                                    @Override
+                                                    public void onSuccess(Void aVoid) {
+                                                        Log.d(TAG, "onSuccess: Url Update Successfully");
+                                                    }
+                                                });
                                         Log.d(TAG, "onSuccess: Uri in localImageUri : " + uri);
                                     }
                                 })
@@ -415,10 +466,12 @@ public class UpdateActivity extends AppCompatActivity implements View.OnClickLis
         phone = mPhoneNumber.getText().toString().trim();
         gender = getGender();
         email = Objects.requireNonNull(mAuth.getCurrentUser()).getEmail();
-        if (localImageUri != null)
-            profileUri = localImageUri.toString();
-        else
+        if (mAuth.getCurrentUser().getPhotoUrl() != null)
+            profileUri = mAuth.getCurrentUser().getPhotoUrl().toString();
+        else if (localImageUri != null)
             profileUri = downloadImageUri();
+        else
+            profileUri = "";
 
 
 
@@ -434,7 +487,6 @@ public class UpdateActivity extends AppCompatActivity implements View.OnClickLis
                         UserProfileChangeRequest changeRequest = new UserProfileChangeRequest
                                 .Builder()
                                 .setDisplayName(userModel.getName())
-                                .setPhotoUri(Uri.parse(userModel.getImageUri()))
                                 .build();
 
                         FirebaseUser user = mAuth.getCurrentUser();
@@ -533,7 +585,7 @@ public class UpdateActivity extends AppCompatActivity implements View.OnClickLis
 
                 Picasso
                         .get()
-                        .load(Uri.parse(userModel.getImageUri()))
+                        .load(Uri.parse(getImageUri(userModel.getImageUri())))
                         .placeholder(R.mipmap.ic_launcher)
                         .into(mImageView);
 
@@ -569,5 +621,37 @@ public class UpdateActivity extends AppCompatActivity implements View.OnClickLis
             case 0:
                 mProgress.setVisibility(View.GONE);
         }
+    }
+
+    private void setmDonutProgress()
+    {
+        mDonutProgress.setVisibility(View.VISIBLE);
+        int statuss = 0;
+        mDonutProgress.setDonut_progress(String.valueOf(statuss));
+
+        Handler handler = new Handler();
+        handler.postDelayed(new Runnable()
+        {
+            int status = 0;
+            @Override
+            public void run()
+            {
+                while (status < 100)
+                {
+                    status++;
+                    mDonutProgress.setDonut_progress(String.valueOf(status));
+                }
+            }
+        }, 5000);
+    }
+
+    private String getImageUri(String uri)
+    {
+        if (Objects.requireNonNull(mAuth.getCurrentUser()).getPhotoUrl() != null)
+            return Objects.requireNonNull(mAuth.getCurrentUser().getPhotoUrl()).toString();
+        else if (uri != null || !uri.isEmpty())
+            return uri;
+        else
+            return "";
     }
 }
