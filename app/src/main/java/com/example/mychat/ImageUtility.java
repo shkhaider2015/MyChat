@@ -57,6 +57,41 @@ public class ImageUtility {
         return iStream;
     }
 
+    public static Bitmap getPreparedImage(Uri uri, Context mCTX )
+    {
+        InputStream iStream = null;
+        ByteArrayOutputStream byteBuffer = new ByteArrayOutputStream();
+        int bufferSize = 1024;
+        byte[] buffer = new byte[bufferSize];
+        int len = 0;
+        byte[] preparedBytes = null;
+        Bitmap preparedBitmap = null;
+
+        try
+        {
+            iStream = mCTX.getContentResolver().openInputStream(uri);
+
+            while ((len = iStream.read(buffer)) != -1) {
+                byteBuffer.write(buffer, 0, len);
+            }
+            preparedBytes = byteBuffer.toByteArray();
+        }catch (FileNotFoundException e)
+        {
+            Log.e(TAG, "getStream: File Not Found : ", e);
+        }catch (IOException e)
+        {
+            Log.e(TAG, "getPreparedImage: IOEXCEPTION ", e);
+        }
+
+        if (preparedBytes != null)
+            preparedBitmap = BitmapFactory.decodeByteArray(preparedBytes, 0, preparedBytes.length);
+
+
+
+
+        return preparedBitmap;
+    }
+
     public static Bitmap getResizedBitmap(Bitmap image, int maxSize) {
         int width = image.getWidth();
         int height = image.getHeight();

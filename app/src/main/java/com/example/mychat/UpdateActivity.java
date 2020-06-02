@@ -7,6 +7,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 
 import android.Manifest;
+import android.app.Activity;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -262,7 +263,7 @@ public class UpdateActivity extends AppCompatActivity implements View.OnClickLis
     {
         super.onActivityResult(requestCode, resultCode, data);
 
-        if (resultCode == this.RESULT_CANCELED)
+        if (resultCode == RESULT_CANCELED)
             return;
 
         if (requestCode == GALLERY_REQUEST_CODE)
